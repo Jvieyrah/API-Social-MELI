@@ -1,0 +1,26 @@
+
+services:
+  mysql:
+    image: 'mysql:latest'
+    environment:
+      - 'MYSQL_DATABASE=meli_social'
+      - 'MYSQL_PASSWORD=secret'
+      - 'MYSQL_ROOT_PASSWORD=verysecret'
+      - 'MYSQL_USER=myuser'
+    ports:
+      - '3306:3306'
+
+  runtime:
+    build: .
+    container_name: app-runtime
+    restart: unless-stopped
+    working_dir: /app
+   #volumes:
+    #  - .:/app
+    #command: ["java", "-jar", "app.jar"]
+    depends_on:
+      - mysql
+    environment:
+      SPRING_DATA_MYSQL_URI: "jdbc:mysql://myuser:secret@mysql:3306/meli_social"
+    ports:
+      - "5173:8080"

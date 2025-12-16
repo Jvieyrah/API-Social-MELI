@@ -1,0 +1,45 @@
+# Maven
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!.mvn/wrapper/maven-wrapper.properties
+
+# Sistema de arquivos do IntelliJ
+.idea/
+*.iml
+out/
+
+# Eclipse
+.classpath
+.project
+.settings/
+
+# Arquivos de compilação
+*.class
+*.jar
+*.war
+*.ear
+*.db
+*.h2.*
+*.log
+
+# Configurações do sistema
+.DS_Store
+Thumbs.db
+
+# Arquivos de dependência
+*.tgz
+*.zip
+*.tar.gz
+*.tar
+
+# Arquivos de IDE
+.vscode/
+.idea/
+*.iml
+
+# Spring Boot DevTools
+spring-boot-devtools.jar
+
+# Outros
+*.log
+hs_err_pid*

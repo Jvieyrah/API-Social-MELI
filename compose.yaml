@@ -23,4 +23,4 @@ services:
     environment:
       SPRING_DATA_MYSQL_URI: "jdbc:mysql://myuser:secret@mysql:3306/meli_social"
     ports:
-      - "5173:8080"
+      - "8080:8080"

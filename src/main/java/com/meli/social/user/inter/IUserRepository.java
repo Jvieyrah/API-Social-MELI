@@ -34,7 +34,9 @@ public interface IUserRepository {
 
     List<User> findTopUsersByFollowersCount();
 
-    List<User> findAllByOrderByFollowersCountDesc(Pageable pageable);
+    default List<User> findAllByOrderByFollowersCountDesc(Pageable pageable) {
+        return null;
+    }
 
     List<User> findUsersWithPosts();
 

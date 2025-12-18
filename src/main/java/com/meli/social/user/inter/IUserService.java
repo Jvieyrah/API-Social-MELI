@@ -1,5 +1,7 @@
 package com.meli.social.user.inter;
 
+import com.meli.social.user.dto.UserDTO;
+import com.meli.social.user.dto.UserSimpleDTO;
 import com.meli.social.user.impl.User;
 
 import java.util.List;
@@ -33,11 +35,11 @@ public interface IUserService {
 
     Integer getFollowersCount(Integer userId);
 
-    List<User> getFollowers(Integer userId);
+    List<UserSimpleDTO> getFollowers(Integer userId);
 
     List<User> getFollowersOrdered(Integer userId, String order);
 
-    List<User> getFollowing(Integer userId);
+    List<UserSimpleDTO> getFollowing(Integer userId);
 
     List<User> getFollowingOrdered(Integer userId, String order);
 
@@ -47,7 +49,7 @@ public interface IUserService {
 
     List<User> getSuggestedUsers(Integer userId);
 
-    List<User> getTopUsers(int limit);
+    List<UserDTO> getTopUsers(int limit);
 
     List<User> getUsersWithPosts();
 

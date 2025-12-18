@@ -1,7 +1,10 @@
 package com.meli.social.user.impl;
 
+import com.meli.social.user.dto.UserDTO;
+import com.meli.social.user.dto.UserSimpleDTO;
 import com.meli.social.user.inter.IUserRepository;
 import com.meli.social.user.inter.IUserService;
+import com.meli.social.user.inter.UserJpaRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -13,251 +16,182 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class UserService implements IUserService {
 
-    private final IUserRepository userRepository;
+    private final UserJpaRepository userRepository;
 
-    @Override
-    @Transactional
-    public User createUser(User user) {
-        if (userRepository.existsByUserName(user.getUserName())) {
-            throw new IllegalArgumentException("Username already exists: " + user.getUserName());
-        }
-        user.setFollowersCount(0);
-        return userRepository.save(user);
-    }
+    // Buscar top users (SEM relacionamentos lazy)
+    public List<UserDTO> getTopUsers(int limit) {
+        List<User> users = userRepository.findAllByOrderByFollowersCountDesc(
+                PageRequest.of(0, limit)
+        );
 
-    @Override
-    public Optional<User> getUserById(Integer userId) {
-        return userRepository.findById(userId);
-    }
-
-    @Override
-    public Optional<User> getUserByUserName(String userName) {
-        return userRepository.findByUserName(userName);
-    }
-
-    @Override
-    public List<User> getAllUsers() {
-        return userRepository.findAll();
-    }
-
-    @Override
-    public List<User> getAllUsersOrdered(String order) {
-        if ("name_asc".equalsIgnoreCase(order)) {
-            return userRepository.findAllByOrderByUserNameAsc();
-        } else if ("name_desc".equalsIgnoreCase(order)) {
-            return userRepository.findAllByOrderByUserNameDesc();
-        }
-        return userRepository.findAll();
-    }
-
-    @Override
-    @Transactional
-    public void deleteUser(Integer userId) {
-        if (!userRepository.existsById(userId)) {
-            throw new IllegalArgumentException("User not found: " + userId);
-        }
-        userRepository.deleteById(userId);
-    }
-
-    @Override
-    public boolean existsUser(Integer userId) {
-        return userRepository.existsById(userId);
-    }
-
-    @Override
-    public boolean existsUserByUserName(String userName) {
-        return userRepository.existsByUserName(userName);
-    }
-
-    @Override
-    public long countUsers() {
-        return userRepository.count();
-    }
-
-    @Override
-    @Transactional
-    public User followUser(Integer followerId, Integer followedId) {
-        if (followerId.equals(followedId)) {
-            throw new IllegalArgumentException("User cannot follow themselves");
-        }
-
-        User follower = userRepository.findById(followerId)
-                .orElseThrow(() -> new IllegalArgumentException("Follower not found: " + followerId));
-
-        User followed = userRepository.findById(followedId)
-                .orElseThrow(() -> new IllegalArgumentException("Followed user not found: " + followedId));
-
-        if (userRepository.isFollowing(followerId, followedId)) {
-            throw new IllegalArgumentException("User " + followerId + " already follows " + followedId);
-        }
-
-        follower.getFollowing().add(followed);
-        followed.setFollowersCount(followed.getFollowersCount() + 1);
-
-        userRepository.save(follower);
-        userRepository.save(followed);
-
-        return followed;
-    }
-
-    @Override
-    @Transactional
-    public User unfollowUser(Integer followerId, Integer followedId) {
-        if (followerId.equals(followedId)) {
-            throw new IllegalArgumentException("User cannot unfollow themselves");
-        }
-
-        User follower = userRepository.findById(followerId)
-                .orElseThrow(() -> new IllegalArgumentException("Follower not found: " + followerId));
-
-        User followed = userRepository.findById(followedId)
-                .orElseThrow(() -> new IllegalArgumentException("Followed user not found: " + followedId));
-
-        if (!userRepository.isFollowing(followerId, followedId)) {
-            throw new IllegalArgumentException("User " + followerId + " does not follow " + followedId);
-        }
-
-        follower.getFollowing().remove(followed);
-        followed.setFollowersCount(Math.max(0, followed.getFollowersCount() - 1));
-
-        userRepository.save(follower);
-        userRepository.save(followed);
-
-        return followed;
-    }
-
-    @Override
-    public boolean isFollowing(Integer followerId, Integer followedId) {
-        return userRepository.isFollowing(followerId, followedId);
-    }
-
-    @Override
-    public Integer getFollowersCount(Integer userId) {
-        return userRepository.getFollowersCountByUserId(userId)
-                .orElseThrow(() -> new IllegalArgumentException("User not found: " + userId));
-    }
-
-    @Override
-    public List<User> getFollowers(Integer userId) {
-        if (!userRepository.existsById(userId)) {
-            throw new IllegalArgumentException("User not found: " + userId);
-        }
-        return userRepository.findFollowersByUserId(userId);
-    }
-
-    @Override
-    public List<User> getFollowersOrdered(Integer userId, String order) {
-        if (!userRepository.existsById(userId)) {
-            throw new IllegalArgumentException("User not found: " + userId);
-        }
-
-        if ("name_asc".equalsIgnoreCase(order)) {
-            return userRepository.findFollowersByUserIdOrderByNameAsc(userId);
-        } else if ("name_desc".equalsIgnoreCase(order)) {
-            return userRepository.findFollowersByUserIdOrderByNameDesc(userId);
-        }
-        return userRepository.findFollowersByUserId(userId);
-    }
-
-    @Override
-    public List<User> getFollowing(Integer userId) {
-        if (!userRepository.existsById(userId)) {
-            throw new IllegalArgumentException("User not found: " + userId);
-        }
-        return userRepository.findFollowingByUserId(userId);
-    }
-
-    @Override
-    public List<User> getFollowingOrdered(Integer userId, String order) {
-        if (!userRepository.existsById(userId)) {
-            throw new IllegalArgumentException("User not found: " + userId);
-        }
-
-        if ("name_asc".equalsIgnoreCase(order)) {
-            return userRepository.findFollowingByUserIdOrderByNameAsc(userId);
-        } else if ("name_desc".equalsIgnoreCase(order)) {
-            return userRepository.findFollowingByUserIdOrderByNameDesc(userId);
-        }
-        return userRepository.findFollowingByUserId(userId);
-    }
-
-    @Override
-    public Integer getFollowingCount(Integer userId) {
-        if (!userRepository.existsById(userId)) {
-            throw new IllegalArgumentException("User not found: " + userId);
-        }
-        return userRepository.countFollowingByUserId(userId);
-    }
-
-    @Override
-    public List<User> getMutualFollowers(Integer userId) {
-        if (!userRepository.existsById(userId)) {
-            throw new IllegalArgumentException("User not found: " + userId);
-        }
-        return userRepository.findMutualFollowers(userId);
-    }
-
-    @Override
-    public List<User> getSuggestedUsers(Integer userId) {
-        if (!userRepository.existsById(userId)) {
-            throw new IllegalArgumentException("User not found: " + userId);
-        }
-        return userRepository.findSuggestedUsers(userId);
-    }
-
-    @Override
-    public List<User> getTopUsers(int limit) {
-        if (limit <= 0) {
-            throw new IllegalArgumentException("Limit must be positive");
-        }
-        Pageable pageable = PageRequest.of(0, limit);
-        return userRepository.findAllByOrderByFollowersCountDesc(pageable);
+        return users.stream()
+                .map(UserDTO::fromEntity)
+                .toList();
     }
 
     @Override
     public List<User> getUsersWithPosts() {
-        return userRepository.findUsersWithPosts();
+        return List.of();
     }
 
     @Override
     public List<User> getUsersByIds(List<Integer> userIds) {
-        if (userIds == null || userIds.isEmpty()) {
-            throw new IllegalArgumentException("User IDs list cannot be empty");
-        }
-        return userRepository.findByUserIdIn(userIds);
+        return List.of();
     }
 
     @Override
     public List<User> getUsersNotFollowingAnyone() {
-        return userRepository.findUsersNotFollowingAnyone();
+        return List.of();
     }
 
     @Override
     public List<User> getUsersWithoutFollowers() {
-        return userRepository.findUsersWithoutFollowers();
+        return List.of();
     }
 
     @Override
     public List<User> searchUsers(String partialName) {
-        if (partialName == null || partialName.trim().isEmpty()) {
-            throw new IllegalArgumentException("Search term cannot be empty");
-        }
-        return userRepository.searchByUserName(partialName);
+        return List.of();
     }
 
     @Override
-    @Transactional
     public void updateFollowersCount(Integer userId) {
-        User user = userRepository.findById(userId)
+
+    }
+
+    // Buscar top users COM relacionamentos (usando FETCH JOIN)
+    public List<UserDTO> getTopUsersWithDetails(int limit) {
+        List<User> users = userRepository.findAllByOrderByFollowersCountDesc(
+                PageRequest.of(0, limit)
+        );
+
+        // Carrega relacionamentos de forma eficiente
+        return users.stream()
+                .map(user -> {
+                    // Força o carregamento dos relacionamentos dentro da transação
+                    user.getFollowers().size();
+                    user.getFollowing().size();
+                    return UserDTO.fromEntityWithRelations(user);
+                })
+                .toList();
+    }
+
+    // Buscar usuário específico COM relacionamentos
+    public UserDTO getUserWithDetails(Integer userId) {
+        User user = userRepository.findByIdWithAllRelations(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found: " + userId));
 
-        List<User> followers = userRepository.findFollowersByUserId(userId);
-        int actualCount = followers.size();
+        return UserDTO.fromEntityWithRelations(user);
+    }
 
-        if (user.getFollowersCount() != actualCount) {
-            userRepository.updateFollowersCount(userId, actualCount);
-        }
+    @Override
+    public User createUser(User user) {
+        return null;
+    }
+
+    @Override
+    public Optional<User> getUserById(Integer userId) {
+        return Optional.empty();
+    }
+
+    @Override
+    public Optional<User> getUserByUserName(String userName) {
+        return Optional.empty();
+    }
+
+    @Override
+    public List<User> getAllUsers() {
+        return List.of();
+    }
+
+    @Override
+    public List<User> getAllUsersOrdered(String order) {
+        return List.of();
+    }
+
+    @Override
+    public void deleteUser(Integer userId) {
+
+    }
+
+    @Override
+    public boolean existsUser(Integer userId) {
+        return false;
+    }
+
+    @Override
+    public boolean existsUserByUserName(String userName) {
+        return false;
+    }
+
+    @Override
+    public long countUsers() {
+        return 0;
+    }
+
+    @Override
+    public User followUser(Integer followerId, Integer followedId) {
+        return null;
+    }
+
+    @Override
+    public User unfollowUser(Integer followerId, Integer followedId) {
+        return null;
+    }
+
+    @Override
+    public boolean isFollowing(Integer followerId, Integer followedId) {
+        return false;
+    }
+
+    @Override
+    public Integer getFollowersCount(Integer userId) {
+        return 0;
+    }
+
+    // Buscar followers de um usuário
+    public List<UserSimpleDTO> getFollowers(Integer userId) {
+        List<User> followers = userRepository.findFollowersByUserId(userId);
+
+        return followers.stream()
+                .map(user -> new UserSimpleDTO(user.getUserId(), user.getUserName()))
+                .toList();
+    }
+
+    @Override
+    public List<User> getFollowersOrdered(Integer userId, String order) {
+        return List.of();
+    }
+
+    // Buscar following de um usuário
+    public List<UserSimpleDTO> getFollowing(Integer userId) {
+        List<User> following = userRepository.findFollowingByUserId(userId);
+
+        return following.stream()
+                .map(user -> new UserSimpleDTO(user.getUserId(), user.getUserName()))
+                .toList();
+    }
+
+    @Override
+    public List<User> getFollowingOrdered(Integer userId, String order) {
+        return List.of();
+    }
+
+    @Override
+    public Integer getFollowingCount(Integer userId) {
+        return 0;
+    }
+
+    @Override
+    public List<User> getMutualFollowers(Integer userId) {
+        return List.of();
+    }
+
+    @Override
+    public List<User> getSuggestedUsers(Integer userId) {
+        return List.of();
     }
 }

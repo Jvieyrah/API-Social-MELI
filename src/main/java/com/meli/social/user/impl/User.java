@@ -1,19 +1,24 @@
 package com.meli.social.user.impl;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.meli.social.model.UserFollow;
 import com.meli.social.model.Post;
 import com.meli.social.model.PostLike;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
+
 import java.util.HashSet;
 import java.util.Set;
 
 @Entity
 @Table(name = "users")
 @Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@ToString(exclude = {"following", "followers", "posts", "likedPosts"})
+@EqualsAndHashCode(of = "userId")
 public class User {
 
     @Id
@@ -27,24 +32,40 @@ public class User {
     @Column(name = "followers_count")
     private Integer followersCount = 0;
 
-    // Relacionamento: usuários que EU sigo
-    @ManyToMany
-    @JoinTable(
-            name = "user_follows",
-            joinColumns = @JoinColumn(name = "follower_id"),
-            inverseJoinColumns = @JoinColumn(name = "followed_id")
-    )
-    private Set<User> following = new HashSet<>();
+    @OneToMany(mappedBy = "follower", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    private Set<UserFollow> following = new HashSet<>();
 
-    // Relacionamento: usuários que ME seguem
-    @ManyToMany(mappedBy = "following")
-    private Set<User> followers = new HashSet<>();
+    @OneToMany(mappedBy = "followed", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    private Set<UserFollow> followers = new HashSet<>();
 
-    // Posts criados pelo usuário
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
     private Set<Post> posts = new HashSet<>();
 
-    // Posts que o usuário curtiu
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
     private Set<PostLike> likedPosts = new HashSet<>();
+
+    public void follow(User userToFollow) {
+        UserFollow userFollow = new UserFollow(this, userToFollow);
+        this.following.add(userFollow);
+        userToFollow.getFollowers().add(userFollow);
+        userToFollow.incrementFollowersCount();
+    }
+
+    public void unfollow(User userToUnfollow) {
+        this.following.removeIf(uf -> uf.getFollowed().equals(userToUnfollow));
+        userToUnfollow.getFollowers().removeIf(uf -> uf.getFollower().equals(this));
+        userToUnfollow.decrementFollowersCount();
+    }
+
+    public void incrementFollowersCount() {
+        this.followersCount = (this.followersCount == null ? 0 : this.followersCount) + 1;
+    }
+
+    public void decrementFollowersCount() {
+        this.followersCount = Math.max(0, (this.followersCount == null ? 0 : this.followersCount) - 1);
+    }
 }

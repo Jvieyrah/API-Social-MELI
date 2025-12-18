@@ -1,18 +1,22 @@
 package com.meli.social.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.meli.social.user.impl.User;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
+
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "post_likes",
         uniqueConstraints = @UniqueConstraint(columnNames = {"user_id", "post_id"}))
 @Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@ToString(exclude = {"user", "post"})
+@EqualsAndHashCode(of = "id")
 public class PostLike {
 
     @Id
@@ -20,11 +24,13 @@ public class PostLike {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "user_id")
+    @JsonIgnore
     private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "post_id", nullable = false)
+    @JoinColumn(name = "post_id")
+    @JsonIgnore
     private Post post;
 
     @Column(name = "liked_at")

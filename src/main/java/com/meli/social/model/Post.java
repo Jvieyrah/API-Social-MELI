@@ -1,10 +1,10 @@
 package com.meli.social.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.meli.social.user.impl.User;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
+
 import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Set;
@@ -12,8 +12,10 @@ import java.util.Set;
 @Entity
 @Table(name = "posts")
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
+@Getter
+@Setter
+@ToString(exclude = {"user", "likes"})
+@EqualsAndHashCode(of = "postId")
 public class Post {
 
     @Id
@@ -22,7 +24,8 @@ public class Post {
     private Integer postId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "user_id")
+    @JsonIgnore
     private User user;
 
     @Column(name = "date", nullable = false)
@@ -46,7 +49,7 @@ public class Post {
     @Column(name = "likes_count")
     private Integer likesCount = 0;
 
-    // Relacionamento com os likes
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
     private Set<PostLike> likes = new HashSet<>();
 }

@@ -11,8 +11,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -20,6 +19,24 @@ import java.util.Optional;
 public class UserService implements IUserService {
 
     private final UserJpaRepository userRepository;
+
+    @Override
+    @Transactional
+    public UserSimpleDTO createUser(String userName) {
+        validateUserName(userName);
+        User user = new User(userName);
+        User savedUser = userRepository.save(user);
+        return UserSimpleDTO.fromUser(savedUser);
+    }
+
+    private void validateUserName(String userName) {
+        if (userName == null || userName.trim().isEmpty()) {
+            throw new IllegalArgumentException("Username não pode ser vazio");
+        }
+        if (userRepository.existsByUserName(userName)) {
+            throw new IllegalArgumentException("Username já existe: " + userName);
+        }
+    }
 
     // Buscar top users (SEM relacionamentos lazy)
     public List<UserDTO> getTopUsers(int limit) {
@@ -87,10 +104,6 @@ public class UserService implements IUserService {
         return UserDTO.fromEntityWithRelations(user);
     }
 
-    @Override
-    public User createUser(User user) {
-        return null;
-    }
 
     @Override
     public Optional<User> getUserById(Integer userId) {

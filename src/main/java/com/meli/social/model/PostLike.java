@@ -11,8 +11,6 @@ import java.time.LocalDateTime;
 @Table(name = "post_likes",
         uniqueConstraints = @UniqueConstraint(columnNames = {"user_id", "post_id"}))
 @Data
-@Getter
-@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString(exclude = {"user", "post"})

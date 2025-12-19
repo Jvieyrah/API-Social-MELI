@@ -12,8 +12,6 @@ import java.util.Set;
 @Entity
 @Table(name = "posts")
 @Data
-@Getter
-@Setter
 @ToString(exclude = {"user", "likes"})
 @EqualsAndHashCode(of = "postId")
 public class Post {

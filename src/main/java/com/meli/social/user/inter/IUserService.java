@@ -9,7 +9,7 @@ import java.util.Optional;
 
 public interface IUserService {
 
-    User createUser(User user);
+    UserSimpleDTO createUser(String userName);
 
     Optional<User> getUserById(Integer userId);
 

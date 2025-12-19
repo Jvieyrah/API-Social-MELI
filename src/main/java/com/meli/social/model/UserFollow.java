@@ -10,8 +10,6 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "user_follows")
 @Data
-@Getter
-@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString(exclude = {"follower", "followed"})

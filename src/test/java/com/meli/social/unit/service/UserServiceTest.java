@@ -1,4 +1,4 @@
-package com.meli.social.unit.repository;
+package com.meli.social.unit.service;
 
 import com.meli.social.user.dto.UserSimpleDTO;
 import com.meli.social.user.model.User;

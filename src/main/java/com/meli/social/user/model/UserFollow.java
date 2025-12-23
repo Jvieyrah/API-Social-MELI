@@ -1,8 +1,7 @@
-package com.meli.social.model;
+package com.meli.social.user.model;
 
 import jakarta.persistence.*;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.meli.social.user.impl.User;
 import lombok.*;
 
 import java.time.LocalDateTime;

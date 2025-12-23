@@ -1,7 +1,6 @@
 package com.meli.social.user.dto;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.meli.social.user.impl.User;
+import com.meli.social.user.model.User;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

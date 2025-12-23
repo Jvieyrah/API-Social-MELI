@@ -1,7 +1,7 @@
 package com.meli.social.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.meli.social.user.impl.User;
+import com.meli.social.user.model.User;
 import jakarta.persistence.*;
 import lombok.*;
 

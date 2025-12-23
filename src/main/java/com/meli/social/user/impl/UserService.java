@@ -2,12 +2,11 @@ package com.meli.social.user.impl;
 
 import com.meli.social.user.dto.UserDTO;
 import com.meli.social.user.dto.UserSimpleDTO;
-import com.meli.social.user.inter.IUserRepository;
 import com.meli.social.user.inter.IUserService;
 import com.meli.social.user.inter.UserJpaRepository;
+import com.meli.social.user.model.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

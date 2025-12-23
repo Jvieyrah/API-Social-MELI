@@ -2,6 +2,7 @@ package com.meli.social.user.impl;
 
 import com.meli.social.user.inter.IUserRepository;
 import com.meli.social.user.inter.UserJpaRepository;
+import com.meli.social.user.model.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;

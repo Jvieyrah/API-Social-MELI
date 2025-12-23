@@ -1,7 +1,6 @@
-package com.meli.social.user.impl;
+package com.meli.social.user.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.meli.social.model.UserFollow;
 import com.meli.social.model.Post;
 import com.meli.social.model.PostLike;
 import jakarta.persistence.*;

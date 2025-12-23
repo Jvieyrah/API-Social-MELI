@@ -2,7 +2,7 @@ package com.meli.social.user.inter;
 
 import com.meli.social.user.model.User;
 
-public interface IfollowService {
+public interface IFollowService {
 
     boolean isFollowing(Integer followerId, Integer followedId);
 

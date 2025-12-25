@@ -2,7 +2,7 @@ package com.meli.social.user.inter;
 
 import com.meli.social.user.dto.UserDTO;
 import com.meli.social.user.dto.UserSimpleDTO;
-import com.meli.social.user.impl.User;
+import com.meli.social.user.model.User;
 
 import java.util.List;
 import java.util.Optional;
@@ -26,12 +26,6 @@ public interface IUserService {
     boolean existsUserByUserName(String userName);
 
     long countUsers();
-
-    User followUser(Integer followerId, Integer followedId);
-
-    User unfollowUser(Integer followerId, Integer followedId);
-
-    boolean isFollowing(Integer followerId, Integer followedId);
 
     Integer getFollowersCount(Integer userId);
 

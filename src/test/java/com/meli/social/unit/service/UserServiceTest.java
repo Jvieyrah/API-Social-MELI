@@ -1,8 +1,7 @@
-package com.meli.social.unit.repository;
+package com.meli.social.unit.service;
 
-import com.meli.social.user.dto.UserDTO;
 import com.meli.social.user.dto.UserSimpleDTO;
-import com.meli.social.user.impl.User;
+import com.meli.social.user.model.User;
 import com.meli.social.user.impl.UserService;
 import com.meli.social.user.inter.UserJpaRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -12,16 +11,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.PageRequest;
 
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -33,6 +27,12 @@ private UserJpaRepository userRepository;
 
 @InjectMocks
 private UserService userService;
+
+@BeforeEach
+void setUp() {
+    reset(userRepository);
+}
+
 
 @Test
 @DisplayName("Deve criar um novo usuário se o username for único e válido")

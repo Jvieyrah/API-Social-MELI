@@ -1,6 +1,6 @@
 package com.meli.social.user.inter;
 
-import com.meli.social.user.impl.User;
+import com.meli.social.user.model.User;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;

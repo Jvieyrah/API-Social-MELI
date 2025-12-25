@@ -27,12 +27,6 @@ public interface IUserService {
 
     long countUsers();
 
-    User followUser(Integer followerId, Integer followedId);
-
-    User unfollowUser(Integer followerId, Integer followedId);
-
-    boolean isFollowing(Integer followerId, Integer followedId);
-
     Integer getFollowersCount(Integer userId);
 
     List<UserSimpleDTO> getFollowers(Integer userId);

@@ -145,21 +145,6 @@ public class UserService implements IUserService {
     }
 
     @Override
-    public User followUser(Integer followerId, Integer followedId) {
-        return null;
-    }
-
-    @Override
-    public User unfollowUser(Integer followerId, Integer followedId) {
-        return null;
-    }
-
-    @Override
-    public boolean isFollowing(Integer followerId, Integer followedId) {
-        return false;
-    }
-
-    @Override
     public Integer getFollowersCount(Integer userId) {
         return 0;
     }

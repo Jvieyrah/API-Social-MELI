@@ -4,6 +4,7 @@ import com.meli.social.user.dto.UserSimpleDTO;
 import com.meli.social.user.model.User;
 import com.meli.social.user.impl.UserService;
 import com.meli.social.user.inter.UserJpaRepository;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -26,6 +27,12 @@ private UserJpaRepository userRepository;
 
 @InjectMocks
 private UserService userService;
+
+@BeforeEach
+void setUp() {
+    reset(userRepository);
+}
+
 
 @Test
 @DisplayName("Deve criar um novo usuário se o username for único e válido")

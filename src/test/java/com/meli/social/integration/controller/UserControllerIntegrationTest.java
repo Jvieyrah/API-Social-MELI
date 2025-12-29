@@ -2,6 +2,7 @@ package com.meli.social.integration.controller;
 
 import com.meli.social.user.dto.UserSimpleDTO;
 import com.meli.social.user.inter.UserJpaRepository;
+import com.meli.social.user.model.User;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import org.junit.jupiter.api.BeforeEach;
@@ -121,5 +122,88 @@ class UserControllerIntegrationTest {
         }
 
         assertThat(userRepository.count()).isEqualTo(3);
+    }
+
+    @Test
+    @DisplayName("Deve retornar a lista de following do usuário")
+    void shouldReturnUserFollowingList() {
+        User userA = createAndSaveUser("user_a");
+        User userB = createAndSaveUser("user_b");
+        User userC = createAndSaveUser("user_c");
+
+        given().when().post("/{userId}/follow/{userIdToFollow}", userA.getUserId(), userB.getUserId()).then().statusCode(200);
+        given().when().post("/{userId}/follow/{userIdToFollow}", userA.getUserId(), userC.getUserId()).then().statusCode(200);
+
+        given()
+                .when()
+                .get("/{userId}/following/list", userA.getUserId())
+                .then()
+                .statusCode(200)
+                .contentType(ContentType.JSON)
+                .body("userId", is(userA.getUserId()))
+                .body("userName", is(userA.getUserName()))
+                .body("followed", hasSize(2))
+                .body("followed.userId", containsInAnyOrder(userB.getUserId(), userC.getUserId()))
+                .body("followed.userName", containsInAnyOrder(userB.getUserName(), userC.getUserName()));
+    }
+
+    @Test
+    @DisplayName("Deve retornar 400 ao buscar following de usuário inexistente")
+    void shouldReturn400WhenGetFollowingUserDoesNotExist() {
+        given()
+                .when()
+                .get("/{userId}/following/list", 99999)
+                .then()
+                .statusCode(400)
+                .contentType(ContentType.JSON)
+                .body("status", equalTo(400))
+                .body("error", equalTo("Bad Request"))
+                .body("message", equalTo("Usuário não encontrado: 99999"))
+                .body("timestamp", notNullValue());
+    }
+
+    @Test
+    @DisplayName("Deve retornar a lista de followers do usuário")
+    void shouldReturnUserFollowersList() {
+        User userA = createAndSaveUser("user_a");
+        User userB = createAndSaveUser("user_b");
+        User userC = createAndSaveUser("user_c");
+
+        given().when().post("/{userId}/follow/{userIdToFollow}", userB.getUserId(), userA.getUserId()).then().statusCode(200);
+        given().when().post("/{userId}/follow/{userIdToFollow}", userC.getUserId(), userA.getUserId()).then().statusCode(200);
+
+        given()
+                .when()
+                .get("/{userId}/followers/list", userA.getUserId())
+                .then()
+                .statusCode(200)
+                .contentType(ContentType.JSON)
+                .body("userId", is(userA.getUserId()))
+                .body("userName", is(userA.getUserName()))
+                .body("followers", hasSize(2))
+                .body("followers.userId", containsInAnyOrder(userB.getUserId(), userC.getUserId()))
+                .body("followers.userName", containsInAnyOrder(userB.getUserName(), userC.getUserName()));
+    }
+
+    @Test
+    @DisplayName("Deve retornar 400 ao buscar followers de usuário inexistente")
+    void shouldReturn400WhenGetFollowersUserDoesNotExist() {
+        given()
+                .when()
+                .get("/{userId}/followers/list", 99999)
+                .then()
+                .statusCode(400)
+                .contentType(ContentType.JSON)
+                .body("status", equalTo(400))
+                .body("error", equalTo("Bad Request"))
+                .body("message", equalTo("Usuário não encontrado: 99999"))
+                .body("timestamp", notNullValue());
+    }
+
+    private User createAndSaveUser(String userName) {
+        User user = new User(userName);
+        User saved = userRepository.saveAndFlush(user);
+        assertThat(saved.getUserId()).isNotNull();
+        return saved;
     }
 }

@@ -2,6 +2,7 @@ package com.meli.social.user.impl;
 
 import com.meli.social.user.dto.UserDTO;
 import com.meli.social.user.dto.UserSimpleDTO;
+import com.meli.social.user.dto.UserWithFollowersDTO;
 import com.meli.social.user.inter.IFollowService;
 import com.meli.social.user.inter.IUserService;
 import lombok.RequiredArgsConstructor;
@@ -69,13 +70,18 @@ public class UserController {
         return ResponseEntity.ok().build();
     }
 
-    @GetMapping("/{userId}/following")
-    public ResponseEntity<List<UserSimpleDTO>> getFollowing(@PathVariable Integer userId) {
+    @GetMapping("/{userId}/followers/count")
+    public ResponseEntity<UserSimpleDTO> getUserWithFollowersCount(@PathVariable Integer userId) {
+        return ResponseEntity.ok(followService.returnUserWithFollowerCounter(userId));
+    }
+
+    @GetMapping("/{userId}/following/list")
+    public ResponseEntity<UserWithFollowersDTO> getFollowing(@PathVariable Integer userId) {
         return ResponseEntity.ok(userService.getFollowing(userId));
     }
 
-    @GetMapping("/{userId}/followers")
-    public ResponseEntity<List<UserSimpleDTO>> getFollowers(@PathVariable Integer userId) {
+    @GetMapping("/{userId}/followers/list")
+    public ResponseEntity<UserWithFollowersDTO> getFollowers(@PathVariable Integer userId) {
         return ResponseEntity.ok(userService.getFollowers(userId));
     }
 

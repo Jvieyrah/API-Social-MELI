@@ -1,6 +1,7 @@
 package com.meli.social.unit.service;
 
 import com.meli.social.exception.UserNotFoundException;
+import com.meli.social.user.dto.UserSimpleDTO;
 import com.meli.social.user.impl.FollowService;
 import com.meli.social.user.model.User;
 import com.meli.social.user.inter.UserJpaRepository;
@@ -45,24 +46,9 @@ public class FollowServiceTest {
     @Test
     @DisplayName("Deve retornar 'true' se um usuário segue outro e 'false' caso não o siga ")
     void testIsFollowing() {
-        // User que segue
-        String userNameA = "test_userA";
-        User savedUserA = new User();
-        savedUserA.setUserId(1);
-        savedUserA.setUserName(userNameA);
-        savedUserA.setFollowersCount(0);
-        savedUserA.setFollowers(new HashSet<>());
-        savedUserA.setFollowing(new HashSet<>());
 
-        // User que apenas é seguido.
-        String userNameB = "test_userB";
-        User savedUserB = new User();
-
-        savedUserB.setUserId(2);
-        savedUserB.setUserName(userNameB);
-        savedUserB.setFollowersCount(0);
-        savedUserB.setFollowers(new HashSet<>());
-        savedUserB.setFollowing(new HashSet<>());
+        User savedUserA = createUser(1, "test_userA");
+        User savedUserB = createUser(2, "test_userB");
 
         when(userRepository.isFollowing(savedUserA.getUserId(),savedUserB.getUserId())).thenReturn(true);
         when(userRepository.isFollowing(savedUserB.getUserId(),savedUserA.getUserId())).thenReturn(false);
@@ -531,4 +517,44 @@ public class FollowServiceTest {
         verify(userRepository, never()).save(any());
     }
 
+    @Test
+    @DisplayName("Deve Retornar SimpleUserDTO quando usuário não está sendo seguindo")
+    void testReturnUserWithFollowerCounter_WhenUserHaveZeroFolowers(){
+        User userA = createUser(1, "test_userA");
+        when(userRepository.findById(1)).thenReturn(Optional.of(userA));
+
+        UserSimpleDTO userSimpleDTO = UserSimpleDTO.fromUserWithFollowers(userA);
+
+        UserSimpleDTO result = followService.returnUserWithFollowerCounter(1);
+        assertEquals(userSimpleDTO, result);
+        assertEquals(userSimpleDTO.getFollowersCount(), result.getFollowersCount());
+        verify(userRepository, times(1)).findById(1);
+    }
+
+    @Test
+    @DisplayName("Deve Retornar SimpleUserDTO quando usuário está sendo seguindo")
+    void testReturnUserWithFollowerCounter_WhenUserHaveFolowers(){
+        User userA = createUser(1, "test_userA");
+        User userB = createUser(2, "test_userB");
+        userB.follow(userA);
+        when(userRepository.findById(1)).thenReturn(Optional.of(userA));
+
+        UserSimpleDTO userSimpleDTO = UserSimpleDTO.fromUserWithFollowers(userA);
+
+        UserSimpleDTO result = followService.returnUserWithFollowerCounter(1);
+        assertEquals(userSimpleDTO, result);
+        assertEquals(1, result.getFollowersCount());
+        verify(userRepository, times(1)).findById(1);
+    }
+
+    @Test
+    @DisplayName("Deve lançar UserNotFoundException quando usuários não existem")
+    void testReturnUserNotFoundException_WhenUserDoesNotExist(){
+        assertThrows(
+                UserNotFoundException.class,
+                () -> followService.returnUserWithFollowerCounter(99),
+                "Usuário não encontrado"
+        );
+        verify(userRepository, times(1)).findById(99);
+    }
 }

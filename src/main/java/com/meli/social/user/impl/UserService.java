@@ -2,6 +2,7 @@ package com.meli.social.user.impl;
 
 import com.meli.social.user.dto.UserDTO;
 import com.meli.social.user.dto.UserSimpleDTO;
+import com.meli.social.user.dto.UserWithFollowersDTO;
 import com.meli.social.user.inter.IUserService;
 import com.meli.social.user.inter.UserJpaRepository;
 import com.meli.social.user.model.User;
@@ -78,16 +79,15 @@ public class UserService implements IUserService {
 
     }
 
-    // Buscar top users COM relacionamentos (usando FETCH JOIN)
+
     public List<UserDTO> getTopUsersWithDetails(int limit) {
         List<User> users = userRepository.findAllByOrderByFollowersCountDesc(
                 PageRequest.of(0, limit)
         );
 
-        // Carrega relacionamentos de forma eficiente
+
         return users.stream()
                 .map(user -> {
-                    // Força o carregamento dos relacionamentos dentro da transação
                     user.getFollowers().size();
                     user.getFollowing().size();
                     return UserDTO.fromEntityWithRelations(user);
@@ -95,7 +95,6 @@ public class UserService implements IUserService {
                 .toList();
     }
 
-    // Buscar usuário específico COM relacionamentos
     public UserDTO getUserWithDetails(Integer userId) {
         User user = userRepository.findByIdWithAllRelations(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found: " + userId));
@@ -106,12 +105,12 @@ public class UserService implements IUserService {
 
     @Override
     public Optional<User> getUserById(Integer userId) {
-        return Optional.empty();
+        return userRepository.findById(userId);
     }
 
     @Override
     public Optional<User> getUserByUserName(String userName) {
-        return Optional.empty();
+        return userRepository.findByUserName(userName);
     }
 
     @Override
@@ -149,13 +148,17 @@ public class UserService implements IUserService {
         return 0;
     }
 
-    // Buscar followers de um usuário
-    public List<UserSimpleDTO> getFollowers(Integer userId) {
-        List<User> followers = userRepository.findFollowersByUserId(userId);
+    @Override
+    public UserWithFollowersDTO getFollowers(Integer userId) {
+        User mainUser = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado: " + userId));
 
-        return followers.stream()
+        List<User> followers = userRepository.findFollowersByUserId(userId);
+        List<UserSimpleDTO> followersDTO = followers.stream()
                 .map(user -> new UserSimpleDTO(user.getUserId(), user.getUserName()))
                 .toList();
+
+        return UserWithFollowersDTO.withFollowers(mainUser, followersDTO);
     }
 
     @Override
@@ -163,14 +166,19 @@ public class UserService implements IUserService {
         return List.of();
     }
 
-    // Buscar following de um usuário
-    public List<UserSimpleDTO> getFollowing(Integer userId) {
-        List<User> following = userRepository.findFollowingByUserId(userId);
+    @Override
+    public UserWithFollowersDTO getFollowing(Integer userId) {
+        User mainUser = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado: " + userId));
 
-        return following.stream()
+        List<User> following = userRepository.findFollowingByUserId(userId);
+        List<UserSimpleDTO> followingDTD = following.stream()
                 .map(user -> new UserSimpleDTO(user.getUserId(), user.getUserName()))
                 .toList();
+
+        return UserWithFollowersDTO.withFollowed(mainUser, followingDTD);
     }
+
 
     @Override
     public List<User> getFollowingOrdered(Integer userId, String order) {

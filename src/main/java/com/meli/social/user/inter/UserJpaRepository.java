@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import org.jspecify.annotations.NullMarked;
 
 import java.util.List;
 import java.util.Optional;
@@ -234,5 +235,8 @@ public interface UserJpaRepository extends JpaRepository<User, Integer> {
     WHERE u.userId IN :userIds
     """)
     List<User> findByIdInWithRelations(@Param("userIds") List<Integer> userIds);
+
+    @Query("SELECT u FROM User u WHERE u.userId = :userId")
+    Optional<User> findById(@Param("userId") Integer userId);
 
 }

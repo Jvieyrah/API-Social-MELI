@@ -1,6 +1,7 @@
 package com.meli.social.user.impl;
 
 import com.meli.social.exception.UserNotFoundException;
+import com.meli.social.user.dto.UserSimpleDTO;
 import com.meli.social.user.inter.IFollowService;
 import com.meli.social.user.inter.UserJpaRepository;
 import com.meli.social.user.model.User;
@@ -79,5 +80,14 @@ public class FollowService implements IFollowService {
         if (followerId.equals(followedId)) {
             throw new IllegalArgumentException("Os IDs de usuário não podem ser iguais!");
         }
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public UserSimpleDTO returnUserWithFollowerCounter (Integer userId){
+        User follower = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("Usuário não encontrado"));
+
+        return UserSimpleDTO.fromUserWithFollowers(follower);
     }
 }

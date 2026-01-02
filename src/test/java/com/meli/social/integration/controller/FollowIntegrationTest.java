@@ -26,6 +26,7 @@ public class FollowIntegrationTest {
 
     @BeforeEach
     void setUp() {
+        RestAssured.reset();
         RestAssured.port = port;
         RestAssured.basePath = "";
         RestAssured.baseURI = "http://localhost";
@@ -204,8 +205,59 @@ public class FollowIntegrationTest {
         given().post("/users/{userId}/follow/{userIdToFollow}", userA.getUserId(), userC.getUserId()).then().statusCode(200);
     }
 
+    @Test
+    @Order(14)
+    @DisplayName("Deve retornar um usuário com nenhum seguidor")
+    void testGetFollowersCount_WhenUserHasNoFollowers() {
+        User user = createAndSaveUser("user_x");
+
+        given()
+                .when()
+                .get("/users/{userId}/followers/count", user.getUserId())
+                .then()
+                .statusCode(200)
+                .body("userId", is(user.getUserId()))
+                .body("userName", is(user.getUserName()))
+                .body("followersCount", is(0));
+    }
+
+    @Test
+    @Order(15)
+    @DisplayName("Deve retornar a contagem correta de seguidores")
+    void testGetFollowersCount_WhenUserHasFollowers() {
+        User target = createAndSaveUser("target");
+        User followerA = createAndSaveUser("follower_a");
+        User followerB = createAndSaveUser("follower_b");
+
+        given().post("/users/{userId}/follow/{userIdToFollow}", followerA.getUserId(), target.getUserId()).then().statusCode(200);
+        given().post("/users/{userId}/follow/{userIdToFollow}", followerB.getUserId(), target.getUserId()).then().statusCode(200);
+
+        given()
+                .when()
+                .get("/users/{userId}/followers/count", target.getUserId())
+                .then()
+                .statusCode(200)
+                .body("userId", is(target.getUserId()))
+                .body("userName", is(target.getUserName()))
+                .body("followersCount", is(2));
+    }
+
+    @Test
+    @Order(16)
+    @DisplayName("Deve retornar 404 quando usuário não existe ao buscar contagem de seguidores")
+    void testGetFollowersCount_WhenUserDoesNotExist() {
+        given()
+                .when()
+                .get("/users/{userId}/followers/count", 99999)
+                .then()
+                .statusCode(404)
+                .body("status", is(404));
+    }
+
     private User createAndSaveUser(String userName) {
         User user = new User(userName);
-        return userRepository.saveAndFlush(user);
+        User saved = userRepository.saveAndFlush(user);
+        Assertions.assertNotNull(saved.getUserId(), "userId não foi gerado após saveAndFlush");
+        return saved;
     }
 }

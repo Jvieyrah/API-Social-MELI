@@ -1,6 +1,7 @@
 package com.meli.social.unit.service;
 
 import com.meli.social.user.dto.UserSimpleDTO;
+import com.meli.social.user.dto.UserWithFollowersDTO;
 import com.meli.social.user.model.User;
 import com.meli.social.user.impl.UserService;
 import com.meli.social.user.inter.UserJpaRepository;
@@ -13,9 +14,12 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -107,6 +111,124 @@ void testCreateUser_NullUserName() {
     assertEquals("Username não pode ser vazio", exception.getMessage());
     verify(userRepository, never()).existsByUserName(anyString());
     verify(userRepository, never()).save(any(User.class));
+}
+
+@Test
+@DisplayName("Deve retornar usuário e lista de followers quando usuário existir")
+void testGetFollowersSuccess() {
+    // Arrange
+    Integer userId = 1;
+
+    User mainUser = new User();
+    mainUser.setUserId(userId);
+    mainUser.setUserName("main_user");
+
+    User follower1 = new User();
+    follower1.setUserId(2);
+    follower1.setUserName("follower_1");
+
+    User follower2 = new User();
+    follower2.setUserId(3);
+    follower2.setUserName("follower_2");
+
+    when(userRepository.findById(userId)).thenReturn(Optional.of(mainUser));
+    when(userRepository.findFollowersByUserId(userId)).thenReturn(List.of(follower1, follower2));
+
+    // Act
+    UserWithFollowersDTO result = userService.getFollowers(userId);
+
+    // Assert
+    assertNotNull(result);
+    assertNotNull(result.getUserName());
+    assertEquals(userId, result.getUserId());
+    assertEquals("main_user", result.getUserName());
+
+    assertNotNull(result.getFollowers());
+    assertEquals(2, result.getFollowers().size());
+    assertEquals(2, result.getFollowers().get(0).getUserId());
+    assertEquals("follower_1", result.getFollowers().get(0).getUserName());
+    assertEquals(3, result.getFollowers().get(1).getUserId());
+    assertEquals("follower_2", result.getFollowers().get(1).getUserName());
+
+    verify(userRepository, times(1)).findById(userId);
+    verify(userRepository, times(1)).findFollowersByUserId(userId);
+}
+
+@Test
+@DisplayName("Deve lançar exceção quando tentar buscar followers de usuário inexistente")
+void testGetFollowersUserNotFound() {
+    // Arrange
+    Integer userId = 999;
+    when(userRepository.findById(userId)).thenReturn(Optional.empty());
+
+    // Act & Assert
+    IllegalArgumentException exception = assertThrows(
+            IllegalArgumentException.class,
+            () -> userService.getFollowers(userId)
+    );
+
+    assertEquals("Usuário não encontrado: " + userId, exception.getMessage());
+    verify(userRepository, times(1)).findById(userId);
+    verify(userRepository, never()).findFollowersByUserId(anyInt());
+}
+
+@Test
+@DisplayName("Deve retornar usuário e lista de following quando usuário existir")
+void testGetFollowingSuccess() {
+    // Arrange
+    Integer userId = 1;
+
+    User mainUser = new User();
+    mainUser.setUserId(userId);
+    mainUser.setUserName("main_user");
+
+    User following1 = new User();
+    following1.setUserId(2);
+    following1.setUserName("following_1");
+
+    User following2 = new User();
+    following2.setUserId(3);
+    following2.setUserName("following_2");
+
+    when(userRepository.findById(userId)).thenReturn(Optional.of(mainUser));
+    when(userRepository.findFollowingByUserId(userId)).thenReturn(List.of(following1, following2));
+
+    // Act
+    UserWithFollowersDTO result = userService.getFollowing(userId);
+
+    // Assert
+    assertNotNull(result);
+    assertNotNull(result.getUserName());
+    assertEquals(userId, result.getUserId());
+    assertEquals("main_user", result.getUserName());
+
+    assertNotNull(result.getFollowed());
+    assertEquals(2, result.getFollowed().size());
+    assertEquals(2, result.getFollowed().get(0).getUserId());
+    assertEquals("following_1", result.getFollowed().get(0).getUserName());
+    assertEquals(3, result.getFollowed().get(1).getUserId());
+    assertEquals("following_2", result.getFollowed().get(1).getUserName());
+
+    verify(userRepository, times(1)).findById(userId);
+    verify(userRepository, times(1)).findFollowingByUserId(userId);
+}
+
+@Test
+@DisplayName("Deve lançar exceção quando tentar buscar following de usuário inexistente")
+void testGetFollowingUserNotFound() {
+    // Arrange
+    Integer userId = 999;
+    when(userRepository.findById(userId)).thenReturn(Optional.empty());
+
+    // Act & Assert
+    IllegalArgumentException exception = assertThrows(
+            IllegalArgumentException.class,
+            () -> userService.getFollowing(userId)
+    );
+
+    assertEquals("Usuário não encontrado: " + userId, exception.getMessage());
+    verify(userRepository, times(1)).findById(userId);
+    verify(userRepository, never()).findFollowingByUserId(anyInt());
 }
 
 

@@ -33,7 +33,6 @@ public class FollowIntegrationTest {
         userRepository.deleteAll();
     }
 
-    // ==================== FOLLOW TESTS ====================
 
     @Test
     @Order(1)

@@ -63,7 +63,7 @@ public class FollowServiceTest {
     @Test
     @DisplayName("Deve retornar o usuário que segue outro")
     void testFollowUser() {
-        // Arrange
+       
         User userA = createUser(1, "test_userA");
         User userB = createUser(2, "test_userB");
 
@@ -72,16 +72,16 @@ public class FollowServiceTest {
         when(userRepository.findById(2)).thenReturn(Optional.of(userB));
         when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        // Act
+ 
         User result = followService.followUser(userA.getUserId(), userB.getUserId());
 
-        // Assert
+ 
         assertNotNull(result);
         assertEquals(userA, result);
         assertEquals(1, result.getFollowing().size());
         assertEquals(1, userB.getFollowersCount());
 
-        // Verify
+ 
         verify(userRepository, times(1)).isFollowing(userA.getUserId(), userB.getUserId());
         verify(userRepository, times(1)).findById(1);
         verify(userRepository, times(1)).findById(2);
@@ -91,10 +91,10 @@ public class FollowServiceTest {
     @Test
     @DisplayName("Deve lançar IllegalArgumentException quando usuário tenta seguir a si mesmo")
     void testFollowUser_ShouldThrowIllegalArgumentException_WhenUserTriesToFollowHimself() {
-        // Arrange
+       
         Integer userId = 1;
 
-        // Act & Assert
+ 
         IllegalArgumentException exception = assertThrows(
                 IllegalArgumentException.class,
                 () -> followService.followUser(userId, userId),
@@ -113,13 +113,13 @@ public class FollowServiceTest {
     @Test
     @DisplayName("Deve lançar IllegalArgumentException quando usuário já segue o outro")
     void testFollowUser_ShouldThrowIllegalArgumentException_WhenAlreadyFollowing() {
-        // Arrange
+       
         Integer followerId = 1;
         Integer followedId = 2;
 
         when(userRepository.isFollowing(followerId, followedId)).thenReturn(true);
 
-        // Act & Assert
+ 
         IllegalArgumentException exception = assertThrows(
                 IllegalArgumentException.class,
                 () -> followService.followUser(followerId, followedId),
@@ -139,14 +139,14 @@ public class FollowServiceTest {
     @Test
     @DisplayName("Deve lançar UserNotFoundException quando follower não existe")
     void testFollowUser_ShouldThrowUserNotFoundException_WhenFollowerDoesNotExist() {
-        // Arrange
+       
         Integer followerId = 999;
         Integer followedId = 2;
 
         when(userRepository.isFollowing(followerId, followedId)).thenReturn(false);
         when(userRepository.findById(followerId)).thenReturn(Optional.empty());
 
-        // Act & Assert
+ 
         UserNotFoundException exception = assertThrows(
                 UserNotFoundException.class,
                 () -> followService.followUser(followerId, followedId),
@@ -165,7 +165,7 @@ public class FollowServiceTest {
     @Test
     @DisplayName("Deve lançar UserNotFoundException quando followed não existe")
     void testFollowUser_ShouldThrowUserNotFoundException_WhenFollowedDoesNotExist() {
-        // Arrange
+       
         Integer followerId = 1;
         Integer followedId = 999;
 
@@ -175,7 +175,7 @@ public class FollowServiceTest {
         when(userRepository.findById(followerId)).thenReturn(Optional.of(followerUser));
         when(userRepository.findById(followedId)).thenReturn(Optional.empty());
 
-        // Act & Assert
+ 
         UserNotFoundException exception = assertThrows(
                 UserNotFoundException.class,
                 () -> followService.followUser(followerId, followedId),
@@ -195,14 +195,14 @@ public class FollowServiceTest {
     @Test
     @DisplayName("Deve lançar UserNotFoundException quando ambos os usuários não existem")
     void testFollowUser_ShouldThrowUserNotFoundException_WhenBothUsersDoNotExist() {
-        // Arrange
+       
         Integer followerId = 888;
         Integer followedId = 999;
 
         when(userRepository.isFollowing(followerId, followedId)).thenReturn(false);
         when(userRepository.findById(followerId)).thenReturn(Optional.empty());
 
-        // Act & Assert
+ 
         UserNotFoundException exception = assertThrows(
                 UserNotFoundException.class,
                 () -> followService.followUser(followerId, followedId),
@@ -220,11 +220,11 @@ public class FollowServiceTest {
     @Test
     @DisplayName("Deve lançar IllegalArgumentException quando followerId é null no isFollowing")
     void testIsFollowing_ShouldThrowIllegalArgumentException_WhenFollowerIdIsNull() {
-        // Arrange
+       
         Integer followerId = null;
         Integer followedId = 2;
 
-        // Act & Assert
+ 
         IllegalArgumentException exception = assertThrows(
                 IllegalArgumentException.class,
                 () -> followService.isFollowing(followerId, followedId),
@@ -241,11 +241,11 @@ public class FollowServiceTest {
     @Test
     @DisplayName("Deve lançar IllegalArgumentException quando followedId é null no isFollowing")
     void testIsFollowing_ShouldThrowIllegalArgumentException_WhenFollowedIdIsNull() {
-        // Arrange
+       
         Integer followerId = 1;
         Integer followedId = null;
 
-        // Act & Assert
+ 
         IllegalArgumentException exception = assertThrows(
                 IllegalArgumentException.class,
                 () -> followService.isFollowing(followerId, followedId),
@@ -262,11 +262,11 @@ public class FollowServiceTest {
     @Test
     @DisplayName("Deve lançar IllegalArgumentException quando ambos os IDs são null no isFollowing")
     void testIsFollowing_ShouldThrowIllegalArgumentException_WhenBothIdsAreNull() {
-        // Arrange
+       
         Integer followerId = null;
         Integer followedId = null;
 
-        // Act & Assert
+ 
         IllegalArgumentException exception = assertThrows(
                 IllegalArgumentException.class,
                 () -> followService.isFollowing(followerId, followedId),
@@ -283,11 +283,11 @@ public class FollowServiceTest {
     @Test
     @DisplayName("Deve lançar IllegalArgumentException quando followerId é null no followUser")
     void testFollowUser_ShouldThrowIllegalArgumentException_WhenFollowerIdIsNull() {
-        // Arrange
+       
         Integer followerId = null;
         Integer followedId = 2;
 
-        // Act & Assert
+ 
         assertThrows(
                 IllegalArgumentException.class,
                 () -> followService.followUser(followerId, followedId),
@@ -320,7 +320,7 @@ public class FollowServiceTest {
     @Test
     @DisplayName("Deve retornar o usuário que deixa de seguir outro")
     void testUnfollowUser() {
-        // Arrange
+       
         User userA = createUser(1, "test_userA");
         User userB = createUser(2, "test_userB");
 
@@ -332,16 +332,16 @@ public class FollowServiceTest {
         when(userRepository.findById(2)).thenReturn(Optional.of(userB));
         when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        // Act
+ 
         User result = followService.unfollowUser(userA.getUserId(), userB.getUserId());
 
-        // Assert
+ 
         assertNotNull(result);
         assertEquals(userA, result);
         assertEquals(0, result.getFollowing().size());
         assertEquals(0, userB.getFollowersCount());
 
-        // Verify
+ 
         verify(userRepository, times(1)).isFollowing(userA.getUserId(), userB.getUserId());
         verify(userRepository, times(1)).findById(1);
         verify(userRepository, times(1)).findById(2);
@@ -351,10 +351,10 @@ public class FollowServiceTest {
     @Test
     @DisplayName("Deve lançar IllegalArgumentException quando usuário tenta deixar de seguir a si mesmo")
     void testUnfollowUser_ShouldThrowIllegalArgumentException_WhenUserTriesToUnfollowHimself() {
-        // Arrange
+       
         Integer userId = 1;
 
-        // Act & Assert
+ 
         IllegalArgumentException exception = assertThrows(
                 IllegalArgumentException.class,
                 () -> followService.unfollowUser(userId, userId),
@@ -373,13 +373,13 @@ public class FollowServiceTest {
     @Test
     @DisplayName("Deve lançar IllegalArgumentException quando usuário não segue o outro")
     void testUnfollowUser_ShouldThrowIllegalArgumentException_WhenNotFollowing() {
-        // Arrange
+       
         Integer followerId = 1;
         Integer followedId = 2;
 
         when(userRepository.isFollowing(followerId, followedId)).thenReturn(false);
 
-        // Act & Assert
+ 
         IllegalArgumentException exception = assertThrows(
                 IllegalArgumentException.class,
                 () -> followService.unfollowUser(followerId, followedId),
@@ -399,14 +399,14 @@ public class FollowServiceTest {
     @Test
     @DisplayName("Deve lançar UserNotFoundException quando follower não existe no unfollow")
     void testUnfollowUser_ShouldThrowUserNotFoundException_WhenFollowerDoesNotExist() {
-        // Arrange
+       
         Integer followerId = 999;
         Integer followedId = 2;
 
         when(userRepository.isFollowing(followerId, followedId)).thenReturn(true);
         when(userRepository.findById(followerId)).thenReturn(Optional.empty());
 
-        // Act & Assert
+ 
         UserNotFoundException exception = assertThrows(
                 UserNotFoundException.class,
                 () -> followService.unfollowUser(followerId, followedId),
@@ -425,7 +425,7 @@ public class FollowServiceTest {
     @Test
     @DisplayName("Deve lançar UserNotFoundException quando followed não existe no unfollow")
     void testUnfollowUser_ShouldThrowUserNotFoundException_WhenFollowedDoesNotExist() {
-        // Arrange
+       
         Integer followerId = 1;
         Integer followedId = 999;
 
@@ -435,7 +435,7 @@ public class FollowServiceTest {
         when(userRepository.findById(followerId)).thenReturn(Optional.of(followerUser));
         when(userRepository.findById(followedId)).thenReturn(Optional.empty());
 
-        // Act & Assert
+ 
         UserNotFoundException exception = assertThrows(
                 UserNotFoundException.class,
                 () -> followService.unfollowUser(followerId, followedId),
@@ -455,14 +455,14 @@ public class FollowServiceTest {
     @Test
     @DisplayName("Deve lançar UserNotFoundException quando ambos os usuários não existem no unfollow")
     void testUnfollowUser_ShouldThrowUserNotFoundException_WhenBothUsersDoNotExist() {
-        // Arrange
+       
         Integer followerId = 888;
         Integer followedId = 999;
 
         when(userRepository.isFollowing(followerId, followedId)).thenReturn(true);
         when(userRepository.findById(followerId)).thenReturn(Optional.empty());
 
-        // Act & Assert
+ 
         UserNotFoundException exception = assertThrows(
                 UserNotFoundException.class,
                 () -> followService.unfollowUser(followerId, followedId),
@@ -480,11 +480,11 @@ public class FollowServiceTest {
     @Test
     @DisplayName("Deve lançar IllegalArgumentException quando followerId é null no unfollowUser")
     void testUnfollowUser_ShouldThrowIllegalArgumentException_WhenFollowerIdIsNull() {
-        // Arrange
+       
         Integer followerId = null;
         Integer followedId = 2;
 
-        // Act & Assert
+ 
         assertThrows(
                 IllegalArgumentException.class,
                 () -> followService.unfollowUser(followerId, followedId),
@@ -500,11 +500,11 @@ public class FollowServiceTest {
     @Test
     @DisplayName("Deve lançar IllegalArgumentException quando followedId é null no unfollowUser")
     void testUnfollowUser_ShouldThrowIllegalArgumentException_WhenFollowedIdIsNull() {
-        // Arrange
+       
         Integer followerId = 1;
         Integer followedId = null;
 
-        // Act & Assert
+ 
         assertThrows(
                 IllegalArgumentException.class,
                 () -> followService.unfollowUser(followerId, followedId),

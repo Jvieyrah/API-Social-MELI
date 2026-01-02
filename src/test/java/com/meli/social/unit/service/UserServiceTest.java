@@ -134,10 +134,8 @@ void testGetFollowersSuccess() {
     when(userRepository.findById(userId)).thenReturn(Optional.of(mainUser));
     when(userRepository.findFollowersByUserId(userId)).thenReturn(List.of(follower1, follower2));
 
-    // Act
     UserWithFollowersDTO result = userService.getFollowers(userId);
 
-    // Assert
     assertNotNull(result);
     assertNotNull(result.getUserName());
     assertEquals(userId, result.getUserId());
@@ -153,6 +151,114 @@ void testGetFollowersSuccess() {
     verify(userRepository, times(1)).findById(userId);
     verify(userRepository, times(1)).findFollowersByUserId(userId);
 }
+
+@Test
+@DisplayName("Deve retornar usuário e lista de followers em ordem alfabética crescente")
+void testGetFollowersSuccess_OrderByUserNameAscending() {
+            Integer userId = 1;
+
+            User mainUser = new User();
+            mainUser.setUserId(userId);
+            mainUser.setUserName("main_user");
+
+            User follower1 = new User();
+            follower1.setUserId(2);
+            follower1.setUserName("alpha");
+
+            User follower2 = new User();
+            follower2.setUserId(3);
+            follower2.setUserName("bravo");
+
+            User follower3 = new User();
+            follower3.setUserId(4);
+            follower3.setUserName("charlie");
+
+            when(userRepository.findById(userId)).thenReturn(Optional.of(mainUser));
+            when(userRepository.findFollowersByUserIdOrderByNameAsc(userId))
+                    .thenReturn(List.of(follower1, follower2, follower3));
+
+            UserWithFollowersDTO result = userService.getFollowers(userId, "name_asc");
+
+            assertNotNull(result.getFollowers());
+            assertEquals(3, result.getFollowers().size());
+            assertEquals(2, result.getFollowers().get(0).getUserId());
+            assertEquals("alpha", result.getFollowers().get(0).getUserName());
+            assertEquals(3, result.getFollowers().get(1).getUserId());
+            assertEquals("bravo", result.getFollowers().get(1).getUserName());
+            assertEquals(4, result.getFollowers().get(2).getUserId());
+            assertEquals("charlie", result.getFollowers().get(2).getUserName());
+
+            verify(userRepository, times(1)).findById(userId);
+            verify(userRepository, times(1)).findFollowersByUserIdOrderByNameAsc(userId);
+}
+
+@Test
+@DisplayName("Deve retornar usuário e lista de followers em ordem alfabética decescente")
+void testGetFollowersSuccess_OrderByUserNameDescending() {
+
+    Integer userId = 1;
+
+    User mainUser = new User();
+    mainUser.setUserId(userId);
+    mainUser.setUserName("main_user");
+
+    User follower1 = new User();
+    follower1.setUserId(2);
+    follower1.setUserName("charlie");
+
+    User follower2 = new User();
+    follower2.setUserId(3);
+    follower2.setUserName("bravo");
+
+    User follower3 = new User();
+    follower3.setUserId(4);
+    follower3.setUserName("alpha");
+
+    when(userRepository.findById(userId)).thenReturn(Optional.of(mainUser));
+    when(userRepository.findFollowersByUserIdOrderByNameDesc(userId))
+            .thenReturn(List.of(follower1, follower2, follower3));
+
+    UserWithFollowersDTO result = userService.getFollowers(userId, "name_desc");
+
+    assertNotNull(result.getFollowers());
+    assertEquals(3, result.getFollowers().size());
+    assertEquals(2, result.getFollowers().get(0).getUserId());
+    assertEquals("charlie", result.getFollowers().get(0).getUserName());
+    assertEquals(3, result.getFollowers().get(1).getUserId());
+    assertEquals("bravo", result.getFollowers().get(1).getUserName());
+    assertEquals(4, result.getFollowers().get(2).getUserId());
+    assertEquals("alpha", result.getFollowers().get(2).getUserName());
+
+    verify(userRepository, times(1)).findById(userId);
+    verify(userRepository, times(1)).findFollowersByUserIdOrderByNameDesc(userId);
+}
+
+@Test
+@DisplayName("Deve lançar exceção quando order de followers for inválido")
+void testGetFollowers_ShouldThrowException_WhenOrderIsInvalid() {
+    Integer userId = 1;
+    String order = "invalid_order";
+
+    User mainUser = new User();
+    mainUser.setUserId(userId);
+    mainUser.setUserName("main_user");
+
+    when(userRepository.findById(userId)).thenReturn(Optional.of(mainUser));
+
+    IllegalArgumentException exception = assertThrows(
+            IllegalArgumentException.class,
+            () -> userService.getFollowers(userId, order)
+    );
+
+    assertEquals("Order inválido: " + order, exception.getMessage());
+    verify(userRepository, times(1)).findById(userId);
+    verify(userRepository, never()).findFollowersByUserId(anyInt());
+    verify(userRepository, never()).findFollowersByUserIdOrderByNameAsc(anyInt());
+    verify(userRepository, never()).findFollowersByUserIdOrderByNameDesc(anyInt());
+}
+
+
+
 
 @Test
 @DisplayName("Deve lançar exceção quando tentar buscar followers de usuário inexistente")
@@ -194,7 +300,7 @@ void testGetFollowingSuccess() {
     when(userRepository.findFollowingByUserId(userId)).thenReturn(List.of(following1, following2));
 
     // Act
-    UserWithFollowersDTO result = userService.getFollowing(userId);
+    UserWithFollowersDTO result = userService.getFollowing(userId, null);
 
     // Assert
     assertNotNull(result);
@@ -213,6 +319,118 @@ void testGetFollowingSuccess() {
     verify(userRepository, times(1)).findFollowingByUserId(userId);
 }
 
+    @Test
+    @DisplayName("Deve retornar usuário e lista de following em ordem alfabética crescente")
+    void testGetFollowingSuccess_OrderByUserNameAscending() {
+        Integer userId = 1;
+
+        User mainUser = new User();
+        mainUser.setUserId(userId);
+        mainUser.setUserName("main_user");
+
+        User following1 = new User();
+        following1.setUserId(2);
+        following1.setUserName("alpha");
+
+        User following2 = new User();
+        following2.setUserId(3);
+        following2.setUserName("bravo");
+
+        User following3 = new User();
+        following3.setUserId(4);
+        following3.setUserName("charlie");
+
+        when(userRepository.findById(userId)).thenReturn(Optional.of(mainUser));
+        when(userRepository.findFollowingByUserIdOrderByNameAsc(userId))
+                .thenReturn(List.of(following1, following2, following3));
+
+        UserWithFollowersDTO result = userService.getFollowing(userId, "name_asc");
+
+        assertNotNull(result);
+        assertEquals(userId, result.getUserId());
+        assertEquals("main_user", result.getUserName());
+
+        assertNotNull(result.getFollowed());
+        assertEquals(3, result.getFollowed().size());
+        assertEquals(2, result.getFollowed().get(0).getUserId());
+        assertEquals("alpha", result.getFollowed().get(0).getUserName());
+        assertEquals(3, result.getFollowed().get(1).getUserId());
+        assertEquals("bravo", result.getFollowed().get(1).getUserName());
+        assertEquals(4, result.getFollowed().get(2).getUserId());
+        assertEquals("charlie", result.getFollowed().get(2).getUserName());
+
+        verify(userRepository, times(1)).findById(userId);
+        verify(userRepository, times(1)).findFollowingByUserIdOrderByNameAsc(userId);
+}
+
+    @Test
+    @DisplayName("Deve retornar usuário e lista de following em ordem alfabética decrescente")
+    void testGetFollowingSuccess_OrderByUserNameDescending() {
+        Integer userId = 1;
+
+        User mainUser = new User();
+        mainUser.setUserId(userId);
+        mainUser.setUserName("main_user");
+
+        User following1 = new User();
+        following1.setUserId(2);
+        following1.setUserName("charlie");
+
+        User following2 = new User();
+        following2.setUserId(3);
+        following2.setUserName("bravo");
+
+        User following3 = new User();
+        following3.setUserId(4);
+        following3.setUserName("alpha");
+
+        when(userRepository.findById(userId)).thenReturn(Optional.of(mainUser));
+        when(userRepository.findFollowingByUserIdOrderByNameDesc(userId))
+                .thenReturn(List.of(following1, following2, following3));
+
+        UserWithFollowersDTO result = userService.getFollowing(userId, "name_desc");
+
+        assertNotNull(result);
+        assertEquals(userId, result.getUserId());
+        assertEquals("main_user", result.getUserName());
+
+        assertNotNull(result.getFollowed());
+        assertEquals(3, result.getFollowed().size());
+        assertEquals(2, result.getFollowed().get(0).getUserId());
+        assertEquals("charlie", result.getFollowed().get(0).getUserName());
+        assertEquals(3, result.getFollowed().get(1).getUserId());
+        assertEquals("bravo", result.getFollowed().get(1).getUserName());
+        assertEquals(4, result.getFollowed().get(2).getUserId());
+        assertEquals("alpha", result.getFollowed().get(2).getUserName());
+
+        verify(userRepository, times(1)).findById(userId);
+        verify(userRepository, times(1)).findFollowingByUserIdOrderByNameDesc(userId);
+    }
+
+@Test
+@DisplayName("Deve lançar exceção quando order de following for inválido")
+void testGetFollowing_ShouldThrowException_WhenOrderIsInvalid() {
+    Integer userId = 1;
+    String order = "invalid_order";
+
+    User mainUser = new User();
+    mainUser.setUserId(userId);
+    mainUser.setUserName("main_user");
+
+    when(userRepository.findById(userId)).thenReturn(Optional.of(mainUser));
+
+    IllegalArgumentException exception = assertThrows(
+            IllegalArgumentException.class,
+            () -> userService.getFollowing(userId, order)
+    );
+
+    assertEquals("Order inválido: " + order, exception.getMessage());
+    verify(userRepository, times(1)).findById(userId);
+    verify(userRepository, never()).findFollowingByUserId(anyInt());
+    verify(userRepository, never()).findFollowingByUserIdOrderByNameAsc(anyInt());
+    verify(userRepository, never()).findFollowingByUserIdOrderByNameDesc(anyInt());
+}
+
 @Test
 @DisplayName("Deve lançar exceção quando tentar buscar following de usuário inexistente")
 void testGetFollowingUserNotFound() {
@@ -223,7 +441,7 @@ void testGetFollowingUserNotFound() {
     // Act & Assert
     IllegalArgumentException exception = assertThrows(
             IllegalArgumentException.class,
-            () -> userService.getFollowing(userId)
+            () -> userService.getFollowing(userId, null)
     );
 
     assertEquals("Usuário não encontrado: " + userId, exception.getMessage());
@@ -235,16 +453,16 @@ void testGetFollowingUserNotFound() {
 //    @Test
 //    @DisplayName("Deve retornar top users ordenados por número de seguidores")
 //    void testGetTopUsers_Success() {
-//        // Arrange
+// 
 //        int limit = 3;
 //        List<User> users = List.of(user3, user1, user2);
 //        when(userRepository.findAllByOrderByFollowersCountDesc(PageRequest.of(0, limit)))
 //                .thenReturn(users);
 //
-//        // Act
+// 
 //        List<UserDTO> result = userService.getTopUsers(limit);
 //
-//        // Assert
+// 
 //        assertNotNull(result);
 //        assertEquals(3, result.size());
 //        assertEquals("pedro_oliveira", result.get(0).getUserName());
@@ -259,15 +477,15 @@ void testGetFollowingUserNotFound() {
 //    @Test
 //    @DisplayName("Deve retornar lista vazia quando não houver usuários")
 //    void testGetTopUsers_EmptyList() {
-//        // Arrange
+// 
 //        int limit = 5;
 //        when(userRepository.findAllByOrderByFollowersCountDesc(PageRequest.of(0, limit)))
 //                .thenReturn(List.of());
 //
-//        // Act
+// 
 //        List<UserDTO> result = userService.getTopUsers(limit);
 //
-//        // Assert
+// 
 //        assertNotNull(result);
 //        assertTrue(result.isEmpty());
 //        verify(userRepository, times(1))
@@ -277,7 +495,7 @@ void testGetFollowingUserNotFound() {
 //    @Test
 //    @DisplayName("Deve retornar top users com detalhes completos")
 //    void testGetTopUsersWithDetails_Success() {
-//        // Arrange
+// 
 //        int limit = 2;
 //
 //        // Configurar relacionamentos
@@ -289,10 +507,10 @@ void testGetFollowingUserNotFound() {
 //        when(userRepository.findAllByOrderByFollowersCountDesc(PageRequest.of(0, limit)))
 //                .thenReturn(users);
 //
-//        // Act
+// 
 //        List<UserDTO> result = userService.getTopUsersWithDetails(limit);
 //
-//        // Assert
+// 
 //        assertNotNull(result);
 //        assertEquals(2, result.size());
 //        assertEquals("joao_silva", result.get(0).getUserName());
@@ -304,7 +522,7 @@ void testGetFollowingUserNotFound() {
 //    @Test
 //    @DisplayName("Deve retornar usuário com todos os detalhes quando encontrado")
 //    void testGetUserWithDetails_Success() {
-//        // Arrange
+// 
 //        Integer userId = 1;
 //        user1.getFollowers().add(user2);
 //        user1.getFollowing().add(user3);
@@ -312,10 +530,10 @@ void testGetFollowingUserNotFound() {
 //        when(userRepository.findByIdWithAllRelations(userId))
 //                .thenReturn(Optional.of(user1));
 //
-//        // Act
+// 
 //        UserDTO result = userService.getUserWithDetails(userId);
 //
-//        // Assert
+// 
 //        assertNotNull(result);
 //        assertEquals(userId, result.getUserId());
 //        assertEquals("joao_silva", result.getUserName());
@@ -327,12 +545,12 @@ void testGetFollowingUserNotFound() {
 //    @Test
 //    @DisplayName("Deve lançar exceção quando usuário não for encontrado")
 //    void testGetUserWithDetails_UserNotFound() {
-//        // Arrange
+// 
 //        Integer userId = 999;
 //        when(userRepository.findByIdWithAllRelations(userId))
 //                .thenReturn(Optional.empty());
 //
-//        // Act & Assert
+//  & Assert
 //        IllegalArgumentException exception = assertThrows(
 //                IllegalArgumentException.class,
 //                () -> userService.getUserWithDetails(userId)
@@ -345,16 +563,16 @@ void testGetFollowingUserNotFound() {
 //    @Test
 //    @DisplayName("Deve retornar lista de seguidores de um usuário")
 //    void testGetFollowers_Success() {
-//        // Arrange
+// 
 //        Integer userId = 1;
 //        List<User> followers = List.of(user2, user3);
 //        when(userRepository.findFollowersByUserId(userId))
 //                .thenReturn(followers);
 //
-//        // Act
+// 
 //        List<UserSimpleDTO> result = userService.getFollowers(userId);
 //
-//        // Assert
+// 
 //        assertNotNull(result);
 //        assertEquals(2, result.size());
 //        assertEquals(2, result.get(0).getUserId());
@@ -368,15 +586,15 @@ void testGetFollowingUserNotFound() {
 //    @Test
 //    @DisplayName("Deve retornar lista vazia quando usuário não tem seguidores")
 //    void testGetFollowers_EmptyList() {
-//        // Arrange
+// 
 //        Integer userId = 1;
 //        when(userRepository.findFollowersByUserId(userId))
 //                .thenReturn(List.of());
 //
-//        // Act
+// 
 //        List<UserSimpleDTO> result = userService.getFollowers(userId);
 //
-//        // Assert
+// 
 //        assertNotNull(result);
 //        assertTrue(result.isEmpty());
 //        verify(userRepository, times(1)).findFollowersByUserId(userId);
@@ -385,16 +603,16 @@ void testGetFollowingUserNotFound() {
 //    @Test
 //    @DisplayName("Deve retornar lista de usuários que o usuário segue")
 //    void testGetFollowing_Success() {
-//        // Arrange
+// 
 //        Integer userId = 1;
 //        List<User> following = List.of(user2, user3);
 //        when(userRepository.findFollowingByUserId(userId))
 //                .thenReturn(following);
 //
-//        // Act
+// 
 //        List<UserSimpleDTO> result = userService.getFollowing(userId);
 //
-//        // Assert
+// 
 //        assertNotNull(result);
 //        assertEquals(2, result.size());
 //        assertEquals(2, result.get(0).getUserId());
@@ -408,15 +626,15 @@ void testGetFollowingUserNotFound() {
 //    @Test
 //    @DisplayName("Deve retornar lista vazia quando usuário não segue ninguém")
 //    void testGetFollowing_EmptyList() {
-//        // Arrange
+// 
 //        Integer userId = 1;
 //        when(userRepository.findFollowingByUserId(userId))
 //                .thenReturn(List.of());
 //
-//        // Act
+// 
 //        List<UserSimpleDTO> result = userService.getFollowing(userId);
 //
-//        // Assert
+// 
 //        assertNotNull(result);
 //        assertTrue(result.isEmpty());
 //        verify(userRepository, times(1)).findFollowingByUserId(userId);
@@ -425,16 +643,16 @@ void testGetFollowingUserNotFound() {
 //    @Test
 //    @DisplayName("Deve lidar com limite de 1 usuário corretamente")
 //    void testGetTopUsers_LimitOne() {
-//        // Arrange
+// 
 //        int limit = 1;
 //        List<User> users = List.of(user3);
 //        when(userRepository.findAllByOrderByFollowersCountDesc(PageRequest.of(0, limit)))
 //                .thenReturn(users);
 //
-//        // Act
+// 
 //        List<UserDTO> result = userService.getTopUsers(limit);
 //
-//        // Assert
+// 
 //        assertNotNull(result);
 //        assertEquals(1, result.size());
 //        assertEquals("pedro_oliveira", result.get(0).getUserName());
@@ -443,10 +661,10 @@ void testGetFollowingUserNotFound() {
 //    @Test
 //    @DisplayName("Deve retornar getUsersWithPosts vazio (não implementado)")
 //    void testGetUsersWithPosts_NotImplemented() {
-//        // Act
+// 
 //        List<User> result = userService.getUsersWithPosts();
 //
-//        // Assert
+// 
 //        assertNotNull(result);
 //        assertTrue(result.isEmpty());
 //    }
@@ -454,10 +672,10 @@ void testGetFollowingUserNotFound() {
 //    @Test
 //    @DisplayName("Deve retornar getUsersByIds vazio (não implementado)")
 //    void testGetUsersByIds_NotImplemented() {
-//        // Act
+// 
 //        List<User> result = userService.getUsersByIds(List.of(1, 2, 3));
 //
-//        // Assert
+// 
 //        assertNotNull(result);
 //        assertTrue(result.isEmpty());
 //    }
@@ -465,10 +683,10 @@ void testGetFollowingUserNotFound() {
 //    @Test
 //    @DisplayName("Deve retornar getUsersNotFollowingAnyone vazio (não implementado)")
 //    void testGetUsersNotFollowingAnyone_NotImplemented() {
-//        // Act
+// 
 //        List<User> result = userService.getUsersNotFollowingAnyone();
 //
-//        // Assert
+// 
 //        assertNotNull(result);
 //        assertTrue(result.isEmpty());
 //    }
@@ -476,10 +694,10 @@ void testGetFollowingUserNotFound() {
 //    @Test
 //    @DisplayName("Deve retornar getUsersWithoutFollowers vazio (não implementado)")
 //    void testGetUsersWithoutFollowers_NotImplemented() {
-//        // Act
+// 
 //        List<User> result = userService.getUsersWithoutFollowers();
 //
-//        // Assert
+// 
 //        assertNotNull(result);
 //        assertTrue(result.isEmpty());
 //    }
@@ -487,10 +705,10 @@ void testGetFollowingUserNotFound() {
 //    @Test
 //    @DisplayName("Deve retornar searchUsers vazio (não implementado)")
 //    void testSearchUsers_NotImplemented() {
-//        // Act
+// 
 //        List<User> result = userService.searchUsers("joao");
 //
-//        // Assert
+// 
 //        assertNotNull(result);
 //        assertTrue(result.isEmpty());
 //    }
@@ -498,47 +716,47 @@ void testGetFollowingUserNotFound() {
 //    @Test
 //    @DisplayName("Deve executar updateFollowersCount sem erro (não implementado)")
 //    void testUpdateFollowersCount_NotImplemented() {
-//        // Act & Assert
+//  & Assert
 //        assertDoesNotThrow(() -> userService.updateFollowersCount(1));
 //    }
 //
 //    @Test
 //    @DisplayName("Deve retornar createUser nulo (não implementado)")
 //    void testCreateUser_NotImplemented() {
-//        // Act
+// 
 //        User result = userService.createUser(user1);
 //
-//        // Assert
+// 
 //        assertNull(result);
 //    }
 //
 //    @Test
 //    @DisplayName("Deve retornar getUserById vazio (não implementado)")
 //    void testGetUserById_NotImplemented() {
-//        // Act
+// 
 //        Optional<User> result = userService.getUserById(1);
 //
-//        // Assert
+// 
 //        assertTrue(result.isEmpty());
 //    }
 //
 //    @Test
 //    @DisplayName("Deve retornar getUserByUserName vazio (não implementado)")
 //    void testGetUserByUserName_NotImplemented() {
-//        // Act
+// 
 //        Optional<User> result = userService.getUserByUserName("joao_silva");
 //
-//        // Assert
+// 
 //        assertTrue(result.isEmpty());
 //    }
 //
 //    @Test
 //    @DisplayName("Deve retornar getAllUsers vazio (não implementado)")
 //    void testGetAllUsers_NotImplemented() {
-//        // Act
+// 
 //        List<User> result = userService.getAllUsers();
 //
-//        // Assert
+// 
 //        assertNotNull(result);
 //        assertTrue(result.isEmpty());
 //    }
@@ -546,10 +764,10 @@ void testGetFollowingUserNotFound() {
 //    @Test
 //    @DisplayName("Deve retornar getAllUsersOrdered vazio (não implementado)")
 //    void testGetAllUsersOrdered_NotImplemented() {
-//        // Act
+// 
 //        List<User> result = userService.getAllUsersOrdered("name_asc");
 //
-//        // Assert
+// 
 //        assertNotNull(result);
 //        assertTrue(result.isEmpty());
 //    }
@@ -557,87 +775,87 @@ void testGetFollowingUserNotFound() {
 //    @Test
 //    @DisplayName("Deve executar deleteUser sem erro (não implementado)")
 //    void testDeleteUser_NotImplemented() {
-//        // Act & Assert
+//  & Assert
 //        assertDoesNotThrow(() -> userService.deleteUser(1));
 //    }
 //
 //    @Test
 //    @DisplayName("Deve retornar existsUser falso (não implementado)")
 //    void testExistsUser_NotImplemented() {
-//        // Act
+// 
 //        boolean result = userService.existsUser(1);
 //
-//        // Assert
+// 
 //        assertFalse(result);
 //    }
 //
 //    @Test
 //    @DisplayName("Deve retornar existsUserByUserName falso (não implementado)")
 //    void testExistsUserByUserName_NotImplemented() {
-//        // Act
+// 
 //        boolean result = userService.existsUserByUserName("joao_silva");
 //
-//        // Assert
+// 
 //        assertFalse(result);
 //    }
 //
 //    @Test
 //    @DisplayName("Deve retornar countUsers zero (não implementado)")
 //    void testCountUsers_NotImplemented() {
-//        // Act
+// 
 //        long result = userService.countUsers();
 //
-//        // Assert
+// 
 //        assertEquals(0, result);
 //    }
 //
 //    @Test
 //    @DisplayName("Deve retornar followUser nulo (não implementado)")
 //    void testFollowUser_NotImplemented() {
-//        // Act
+// 
 //        User result = userService.followUser(1, 2);
 //
-//        // Assert
+// 
 //        assertNull(result);
 //    }
 //
 //    @Test
 //    @DisplayName("Deve retornar unfollowUser nulo (não implementado)")
 //    void testUnfollowUser_NotImplemented() {
-//        // Act
+// 
 //        User result = userService.unfollowUser(1, 2);
 //
-//        // Assert
+// 
 //        assertNull(result);
 //    }
 //
 //    @Test
 //    @DisplayName("Deve retornar isFollowing falso (não implementado)")
 //    void testIsFollowing_NotImplemented() {
-//        // Act
+// 
 //        boolean result = userService.isFollowing(1, 2);
 //
-//        // Assert
+// 
 //        assertFalse(result);
 //    }
 //
 //    @Test
 //    @DisplayName("Deve retornar getFollowersCount nulo (não implementado)")
 //    void testGetFollowersCount_NotImplemented() {
-//        // Act
+// 
 //        Integer result = userService.getFollowersCount(1);
 //
-//        // Assert
+// 
 //        assertNull(result);
 //    }
 //
 //    @Test
 //    @DisplayName("Deve retornar getFollowersOrdered vazio (não implementado)")
 //    void testGetFollowersOrdered_NotImplemented() {
-//        // Act
+// 
 //        List<User> result = userService.getFollowersOrdered(1, "name_asc");
 //
-//        // Assert
+// 
 //        assertNotNull(result);
 //        assertTrue(result.isEmpty());
 //    }
@@ -645,10 +863,10 @@ void testGetFollowingUserNotFound() {
 //    @Test
 //    @DisplayName("Deve retornar getFollowingOrdered vazio (não implementado)")
 //    void testGetFollowingOrdered_NotImplemented() {
-//        // Act
+// 
 //        List<User> result = userService.getFollowingOrdered(1, "name_asc");
 //
-//        // Assert
+// 
 //        assertNotNull(result);
 //        assertTrue(result.isEmpty());
 //    }
@@ -656,20 +874,20 @@ void testGetFollowingUserNotFound() {
 //    @Test
 //    @DisplayName("Deve retornar getFollowingCount nulo (não implementado)")
 //    void testGetFollowingCount_NotImplemented() {
-//        // Act
+// 
 //        Integer result = userService.getFollowingCount(1);
 //
-//        // Assert
+// 
 //        assertNull(result);
 //    }
 //
 //    @Test
 //    @DisplayName("Deve retornar getMutualFollowers vazio (não implementado)")
 //    void testGetMutualFollowers_NotImplemented() {
-//        // Act
+// 
 //        List<User> result = userService.getMutualFollowers(1);
 //
-//        // Assert
+// 
 //        assertNotNull(result);
 //        assertTrue(result.isEmpty());
 //    }
@@ -677,10 +895,10 @@ void testGetFollowingUserNotFound() {
 //    @Test
 //    @DisplayName("Deve retornar getSuggestedUsers vazio (não implementado)")
 //    void testGetSuggestedUsers_NotImplemented() {
-//        // Act
+// 
 //        List<User> result = userService.getSuggestedUsers(1);
 //
-//        // Assert
+// 
 //        assertNotNull(result);
 //        assertTrue(result.isEmpty());
 //    }

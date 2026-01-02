@@ -5,6 +5,7 @@ import com.meli.social.user.inter.UserJpaRepository;
 import com.meli.social.user.model.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 

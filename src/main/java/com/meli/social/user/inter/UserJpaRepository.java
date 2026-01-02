@@ -2,12 +2,12 @@ package com.meli.social.user.inter;
 
 import com.meli.social.user.model.User;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-import org.jspecify.annotations.NullMarked;
 
 import java.util.List;
 import java.util.Optional;
@@ -27,6 +27,7 @@ public interface UserJpaRepository extends JpaRepository<User, Integer> {
         WHERE uf.followed.userId = :userId
         """)
     List<User> findFollowersByUserId(@Param("userId") Integer userId);
+
 
     @Query("""
         SELECT uf.follower FROM UserFollow uf 

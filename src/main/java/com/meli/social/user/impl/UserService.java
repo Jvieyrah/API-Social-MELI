@@ -8,6 +8,7 @@ import com.meli.social.user.inter.UserJpaRepository;
 import com.meli.social.user.model.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -150,10 +151,25 @@ public class UserService implements IUserService {
 
     @Override
     public UserWithFollowersDTO getFollowers(Integer userId) {
+        return getFollowers(userId, null);
+    }
+
+    @Override
+    public UserWithFollowersDTO getFollowers(Integer userId, String order) {
         User mainUser = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado: " + userId));
 
-        List<User> followers = userRepository.findFollowersByUserId(userId);
+        List<User> followers;
+        if (order == null || order.trim().isEmpty()) {
+            followers = userRepository.findFollowersByUserId(userId);
+        } else if ("name_asc".equalsIgnoreCase(order)) {
+            followers = userRepository.findFollowersByUserIdOrderByNameAsc(userId);
+        } else if ("name_desc".equalsIgnoreCase(order)) {
+            followers = userRepository.findFollowersByUserIdOrderByNameDesc(userId);
+        } else {
+            throw new IllegalArgumentException("Order inválido: " + order);
+        }
+
         List<UserSimpleDTO> followersDTO = followers.stream()
                 .map(user -> new UserSimpleDTO(user.getUserId(), user.getUserName()))
                 .toList();
@@ -161,17 +177,22 @@ public class UserService implements IUserService {
         return UserWithFollowersDTO.withFollowers(mainUser, followersDTO);
     }
 
-    @Override
-    public List<User> getFollowersOrdered(Integer userId, String order) {
-        return List.of();
-    }
 
     @Override
-    public UserWithFollowersDTO getFollowing(Integer userId) {
+    public UserWithFollowersDTO getFollowing(Integer userId,String order) {
         User mainUser = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado: " + userId));
 
-        List<User> following = userRepository.findFollowingByUserId(userId);
+        List<User> following;
+        if (order == null || order.trim().isEmpty()) {
+            following = userRepository.findFollowingByUserId(userId);
+        } else if ("name_asc".equalsIgnoreCase(order)) {
+            following = userRepository.findFollowingByUserIdOrderByNameAsc(userId);
+        } else if ("name_desc".equalsIgnoreCase(order)) {
+            following = userRepository.findFollowingByUserIdOrderByNameDesc(userId);
+        } else {
+            throw new IllegalArgumentException("Order inválido: " + order);
+        }
         List<UserSimpleDTO> followingDTD = following.stream()
                 .map(user -> new UserSimpleDTO(user.getUserId(), user.getUserName()))
                 .toList();
@@ -179,11 +200,6 @@ public class UserService implements IUserService {
         return UserWithFollowersDTO.withFollowed(mainUser, followingDTD);
     }
 
-
-    @Override
-    public List<User> getFollowingOrdered(Integer userId, String order) {
-        return List.of();
-    }
 
     @Override
     public Integer getFollowingCount(Integer userId) {

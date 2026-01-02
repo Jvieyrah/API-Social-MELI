@@ -41,11 +41,9 @@ class UserControllerIntegrationTest {
     @Test
     @DisplayName("Deve criar um novo usuário com sucesso")
     void shouldCreateNewUserSuccessfully() {
-        // Arrange
         Map<String, String> request = new HashMap<>();
         request.put("userName", "joao_silva");
 
-        // Act & Assert
         UserSimpleDTO response = given()
                 .contentType(ContentType.JSON)
                 .body(request)
@@ -148,6 +146,76 @@ class UserControllerIntegrationTest {
     }
 
     @Test
+    @DisplayName("Deve retornar a lista de following do usuário em ordem alfabética cescente")
+    void shouldReturnUserFollowingList_ascending() {
+        User userA = createAndSaveUser("user_a");
+        User userB = createAndSaveUser("ana");
+        User userC = createAndSaveUser("bruno");
+
+        given().when().post("/{userId}/follow/{userIdToFollow}", userA.getUserId(), userB.getUserId()).then().statusCode(200);
+        given().when().post("/{userId}/follow/{userIdToFollow}", userA.getUserId(), userC.getUserId()).then().statusCode(200);
+
+        given()
+                .when()
+                .get("/{userId}/following/list?order=name_asc", userA.getUserId())
+                .then()
+                .statusCode(200)
+                .contentType(ContentType.JSON)
+                .body("userId", is(userA.getUserId()))
+                .body("userName", is(userA.getUserName()))
+                .body("followed", hasSize(2))
+                .body("followed[0].userName", is("ana"))
+                .body("followed[1].userName", is("bruno"));
+    }
+
+    @Test
+    @DisplayName("Deve retornar a lista de following do usuário em ordem alfabética decrescente")
+    void shouldReturnUserFollowingList_descending() {
+        User userA = createAndSaveUser("user_a");
+        User userB = createAndSaveUser("ana");
+        User userC = createAndSaveUser("bruno");
+
+        given().when().post("/{userId}/follow/{userIdToFollow}", userA.getUserId(), userB.getUserId()).then().statusCode(200);
+        given().when().post("/{userId}/follow/{userIdToFollow}", userA.getUserId(), userC.getUserId()).then().statusCode(200);
+
+        given()
+                .when()
+                .get("/{userId}/following/list?order=name_desc", userA.getUserId())
+                .then()
+                .statusCode(200)
+                .contentType(ContentType.JSON)
+                .body("userId", is(userA.getUserId()))
+                .body("userName", is(userA.getUserName()))
+                .body("followed", hasSize(2))
+                .body("followed[0].userName", is("bruno"))
+                .body("followed[1].userName", is("ana"));
+    }
+
+    @Test
+    @DisplayName("Deve retornar 400 ao buscar following com order inválido")
+    void shouldReturn400WhenGetFollowingWithInvalidOrder() {
+        User userA = createAndSaveUser("user_a");
+        User userB = createAndSaveUser("ana");
+        User userC = createAndSaveUser("bruno");
+
+        given().when().post("/{userId}/follow/{userIdToFollow}", userA.getUserId(), userB.getUserId()).then().statusCode(200);
+        given().when().post("/{userId}/follow/{userIdToFollow}", userA.getUserId(), userC.getUserId()).then().statusCode(200);
+
+        String invalidOrder = "invalid_order";
+
+        given()
+                .when()
+                .get("/{userId}/following/list?order=" + invalidOrder, userA.getUserId())
+                .then()
+                .statusCode(400)
+                .contentType(ContentType.JSON)
+                .body("status", equalTo(400))
+                .body("error", equalTo("Bad Request"))
+                .body("message", equalTo("Order inválido: " + invalidOrder))
+                .body("timestamp", notNullValue());
+    }
+
+    @Test
     @DisplayName("Deve retornar 400 ao buscar following de usuário inexistente")
     void shouldReturn400WhenGetFollowingUserDoesNotExist() {
         given()
@@ -183,6 +251,76 @@ class UserControllerIntegrationTest {
                 .body("followers", hasSize(2))
                 .body("followers.userId", containsInAnyOrder(userB.getUserId(), userC.getUserId()))
                 .body("followers.userName", containsInAnyOrder(userB.getUserName(), userC.getUserName()));
+    }
+
+    @Test
+    @DisplayName("Deve retornar a lista de followers do usuário em ordem alfabética cescente")
+    void shouldReturnUserFollowersListInAlphabeticalOrderAscending() {
+        User userA = createAndSaveUser("user_a");
+        User userB = createAndSaveUser("ana");
+        User userC = createAndSaveUser("bruno");
+
+        given().when().post("/{userId}/follow/{userIdToFollow}", userB.getUserId(), userA.getUserId()).then().statusCode(200);
+        given().when().post("/{userId}/follow/{userIdToFollow}", userC.getUserId(), userA.getUserId()).then().statusCode(200);
+
+        given()
+                .when()
+                .get("/{userId}/followers/list?order=name_asc", userA.getUserId())
+                .then()
+                .statusCode(200)
+                .contentType(ContentType.JSON)
+                .body("userId", is(userA.getUserId()))
+                .body("userName", is(userA.getUserName()))
+                .body("followers", hasSize(2))
+                .body("followers[0].userName", is("ana"))
+                .body("followers[1].userName", is("bruno"));
+    }
+
+    @Test
+    @DisplayName("Deve retornar a lista de followers do usuário em ordem alfabética decrescente")
+    void shouldReturnUserFollowersListInAlphabeticalOrderDescending() {
+        User userA = createAndSaveUser("user_a");
+        User userB = createAndSaveUser("ana");
+        User userC = createAndSaveUser("bruno");
+
+        given().when().post("/{userId}/follow/{userIdToFollow}", userB.getUserId(), userA.getUserId()).then().statusCode(200);
+        given().when().post("/{userId}/follow/{userIdToFollow}", userC.getUserId(), userA.getUserId()).then().statusCode(200);
+
+        given()
+                .when()
+                .get("/{userId}/followers/list?order=name_desc", userA.getUserId())
+                .then()
+                .statusCode(200)
+                .contentType(ContentType.JSON)
+                .body("userId", is(userA.getUserId()))
+                .body("userName", is(userA.getUserName()))
+                .body("followers", hasSize(2))
+                .body("followers[0].userName", is("bruno"))
+                .body("followers[1].userName", is("ana"));
+    }
+
+    @Test
+    @DisplayName("Deve retornar 400 ao buscar followers com order inválido")
+    void shouldReturn400WhenGetFollowersWithInvalidOrder() {
+        User userA = createAndSaveUser("user_a");
+        User userB = createAndSaveUser("ana");
+        User userC = createAndSaveUser("bruno");
+
+        given().when().post("/{userId}/follow/{userIdToFollow}", userB.getUserId(), userA.getUserId()).then().statusCode(200);
+        given().when().post("/{userId}/follow/{userIdToFollow}", userC.getUserId(), userA.getUserId()).then().statusCode(200);
+
+        String invalidOrder = "invalid_order";
+
+        given()
+                .when()
+                .get("/{userId}/followers/list?order=" + invalidOrder, userA.getUserId())
+                .then()
+                .statusCode(400)
+                .contentType(ContentType.JSON)
+                .body("status", equalTo(400))
+                .body("error", equalTo("Bad Request"))
+                .body("message", equalTo("Order inválido: " + invalidOrder))
+                .body("timestamp", notNullValue());
     }
 
     @Test

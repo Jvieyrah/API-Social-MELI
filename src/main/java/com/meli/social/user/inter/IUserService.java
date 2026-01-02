@@ -32,11 +32,9 @@ public interface IUserService {
 
     UserWithFollowersDTO getFollowers(Integer userId);
 
-    List<User> getFollowersOrdered(Integer userId, String order);
+    UserWithFollowersDTO getFollowers(Integer userId, String order);
 
-    UserWithFollowersDTO getFollowing(Integer userId);
-
-    List<User> getFollowingOrdered(Integer userId, String order);
+    UserWithFollowersDTO getFollowing(Integer userId, String order);
 
     Integer getFollowingCount(Integer userId);
 

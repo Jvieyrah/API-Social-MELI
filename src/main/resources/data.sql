@@ -1,6 +1,7 @@
 -- Limpar dados existentes
 DELETE FROM post_likes;
 DELETE FROM posts;
+DELETE FROM products;
 DELETE FROM user_follows;
 DELETE FROM users;
 
@@ -65,36 +66,51 @@ INSERT INTO user_follows (follower_id, followed_id, followed_at) VALUES
 INSERT INTO user_follows (follower_id, followed_id, followed_at) VALUES
     (10, 5, '2025-12-11 11:00:00');
 
+-- Inserir produtos
+INSERT INTO products (product_id, product_name, type, brand, color, notes) VALUES
+                                                                                 (101, 'Mouse Gamer RGB', 'Periférico', 'Logitech', 'Preto', 'Alta precisão'),
+                                                                                 (102, 'Teclado Mecânico', 'Periférico', 'Razer', 'Preto', 'Switch Blue'),
+                                                                                 (201, 'Cadeira Gamer', 'Móvel', 'DXRacer', 'Vermelho', 'Ergonômica com apoio lombar'),
+                                                                                 (202, 'Mesa para Computador', 'Móvel', 'Madesa', 'Branco', 'Com suporte para monitor'),
+                                                                                 (301, 'Notebook Dell', 'Eletrônico', 'Dell', 'Prata', 'i7 16GB RAM 512GB SSD'),
+                                                                                 (302, 'Monitor 27 polegadas', 'Eletrônico', 'LG', 'Preto', 'Full HD IPS'),
+                                                                                 (501, 'Fone Bluetooth', 'Áudio', 'Sony', 'Preto', 'Cancelamento de ruído'),
+                                                                                 (502, 'Caixa de Som Portátil', 'Áudio', 'JBL', 'Azul', 'À prova d água'),
+                                                                                 (503, 'Microfone USB', 'Áudio', 'Blue Yeti', 'Preto', 'Para streaming'),
+                                                                                 (601, 'Webcam Full HD', 'Eletrônico', 'Logitech', 'Preto', 'Para videochamadas'),
+                                                                                 (901, 'SSD 1TB', 'Hardware', 'Kingston', 'Preto', 'NVMe Gen4'),
+                                                                                 (902, 'Placa de Vídeo RTX', 'Hardware', 'NVIDIA', 'Preto', '8GB GDDR6');
+
 -- Inserir posts
 -- Posts de joaosilva (1)
-INSERT INTO posts (post_id, user_id, date, product_id, product_name, type, brand, color, notes, category, price, has_promo, discount, likes_count) VALUES
-                                                                                                                                                       (1, 1, '2025-12-10', 101, 'Mouse Gamer RGB', 'Periférico', 'Logitech', 'Preto', 'Alta precisão', 58, 299.90, true, 50.00, 0),
-                                                                                                                                                       (2, 1, '2025-12-12', 102, 'Teclado Mecânico', 'Periférico', 'Razer', 'Preto', 'Switch Blue', 58, 599.90, false, 0, 0);
+INSERT INTO posts (post_id, user_id, date, product_id, category, price, has_promo, discount, likes_count) VALUES
+                                                                                                               (1, 1, '2025-12-10', 101, 58, 299.90, true, 50.00, 0),
+                                                                                                               (2, 1, '2025-12-12', 102, 58, 599.90, false, 0, 0);
 
 -- Posts de mariasantos (2)
-INSERT INTO posts (post_id, user_id, date, product_id, product_name, type, brand, color, notes, category, price, has_promo, discount, likes_count) VALUES
-                                                                                                                                                       (3, 2, '2025-12-05', 201, 'Cadeira Gamer', 'Móvel', 'DXRacer', 'Vermelho', 'Ergonômica com apoio lombar', 100, 1299.00, true, 200.00, 0),
-                                                                                                                                                       (4, 2, '2025-12-14', 202, 'Mesa para Computador', 'Móvel', 'Madesa', 'Branco', 'Com suporte para monitor', 100, 450.00, false, 0, 0);
+INSERT INTO posts (post_id, user_id, date, product_id, category, price, has_promo, discount, likes_count) VALUES
+                                                                                                               (3, 2, '2025-12-05', 201, 100, 1299.00, true, 200.00, 0),
+                                                                                                               (4, 2, '2025-12-14', 202, 100, 450.00, false, 0, 0);
 
 -- Posts de pedrocoста (3)
-INSERT INTO posts (post_id, user_id, date, product_id, product_name, type, brand, color, notes, category, price, has_promo, discount, likes_count) VALUES
-                                                                                                                                                       (5, 3, '2025-12-08', 301, 'Notebook Dell', 'Eletrônico', 'Dell', 'Prata', 'i7 16GB RAM 512GB SSD', 25, 4500.00, true, 500.00, 0),
-                                                                                                                                                       (6, 3, '2025-12-15', 302, 'Monitor 27 polegadas', 'Eletrônico', 'LG', 'Preto', 'Full HD IPS', 25, 899.00, false, 0, 0);
+INSERT INTO posts (post_id, user_id, date, product_id, category, price, has_promo, discount, likes_count) VALUES
+                                                                                                               (5, 3, '2025-12-08', 301, 25, 4500.00, true, 500.00, 0),
+                                                                                                               (6, 3, '2025-12-15', 302, 25, 899.00, false, 0, 0);
 
 -- Posts de carlosmendes (5)
-INSERT INTO posts (post_id, user_id, date, product_id, product_name, type, brand, color, notes, category, price, has_promo, discount, likes_count) VALUES
-                                                                                                                                                       (7, 5, '2025-12-03', 501, 'Fone Bluetooth', 'Áudio', 'Sony', 'Preto', 'Cancelamento de ruído', 45, 699.00, true, 100.00, 0),
-                                                                                                                                                       (8, 5, '2025-12-11', 502, 'Caixa de Som Portátil', 'Áudio', 'JBL', 'Azul', 'À prova d água', 45, 349.00, true, 50.00, 0),
-                                                                                                                                                       (9, 5, '2025-12-16', 503, 'Microfone USB', 'Áudio', 'Blue Yeti', 'Preto', 'Para streaming', 45, 899.00, false, 0, 0);
+INSERT INTO posts (post_id, user_id, date, product_id, category, price, has_promo, discount, likes_count) VALUES
+                                                                                                               (7, 5, '2025-12-03', 501, 45, 699.00, true, 100.00, 0),
+                                                                                                               (8, 5, '2025-12-11', 502, 45, 349.00, true, 50.00, 0),
+                                                                                                               (9, 5, '2025-12-16', 503, 45, 899.00, false, 0, 0);
 
 -- Posts de juliaferreira (6)
-INSERT INTO posts (post_id, user_id, date, product_id, product_name, type, brand, color, notes, category, price, has_promo, discount, likes_count) VALUES
-    (10, 6, '2025-12-07', 601, 'Webcam Full HD', 'Eletrônico', 'Logitech', 'Preto', 'Para videochamadas', 25, 299.00, false, 0, 0);
+INSERT INTO posts (post_id, user_id, date, product_id, category, price, has_promo, discount, likes_count) VALUES
+    (10, 6, '2025-12-07', 601, 25, 299.00, false, 0, 0);
 
 -- Posts de fernando (9)
-INSERT INTO posts (post_id, user_id, date, product_id, product_name, type, brand, color, notes, category, price, has_promo, discount, likes_count) VALUES
-                                                                                                                                                       (11, 9, '2025-12-09', 901, 'SSD 1TB', 'Hardware', 'Kingston', 'Preto', 'NVMe Gen4', 30, 599.00, true, 100.00, 0),
-                                                                                                                                                       (12, 9, '2025-12-13', 902, 'Placa de Vídeo RTX', 'Hardware', 'NVIDIA', 'Preto', '8GB GDDR6', 30, 3500.00, false, 0, 0);
+INSERT INTO posts (post_id, user_id, date, product_id, category, price, has_promo, discount, likes_count) VALUES
+                                                                                                               (11, 9, '2025-12-09', 901, 30, 599.00, true, 100.00, 0),
+                                                                                                               (12, 9, '2025-12-13', 902, 30, 3500.00, false, 0, 0);
 
 -- Inserir likes nos posts
 -- Post 1 (Mouse Gamer) tem 5 likes

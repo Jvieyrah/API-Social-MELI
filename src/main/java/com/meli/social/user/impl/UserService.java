@@ -194,7 +194,7 @@ public class UserService implements IUserService {
             throw new IllegalArgumentException("Order inválido: " + order);
         }
         List<UserSimpleDTO> followingDTD = following.stream()
-                .map(user -> new UserSimpleDTO(user.getUserId(), user.getUserName()))
+                .map(user -> new UserSimpleDTO(user.getUserId(), user.getUserName())) // <- estudar a implementacao de uma classe mapper aqui.
                 .toList();
 
         return UserWithFollowersDTO.withFollowed(mainUser, followingDTD);

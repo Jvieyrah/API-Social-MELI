@@ -1,4 +1,4 @@
-package com.meli.social.model;
+package com.meli.social.post.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.meli.social.user.model.User;
@@ -29,7 +29,8 @@ public class Post {
     @Column(name = "date", nullable = false)
     private LocalDate date;
 
-    @Embedded
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "product_id")
     private Product product;
 
     @Column(name = "category")

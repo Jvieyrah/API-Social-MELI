@@ -1,4 +1,4 @@
-package com.meli.social.model;
+package com.meli.social.post.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.meli.social.user.model.User;

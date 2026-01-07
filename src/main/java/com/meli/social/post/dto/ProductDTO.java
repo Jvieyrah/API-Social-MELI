@@ -20,16 +20,12 @@ public class ProductDTO {
     @JsonAlias("productName")
     private String productName;
 
-    @JsonAlias("type")
     private String type;
 
-    @JsonAlias("brand")
     private String brand;
 
-    @JsonAlias("color")
     private String color;
 
-    @JsonAlias("notes")
     private String notes;
 
     public Product toEntity() {

@@ -1,5 +1,7 @@
 package com.meli.social.post.impl;
 
+import com.meli.social.exception.UserNotFoundException;
+import com.meli.social.post.dto.FollowedPostsDTO;
 import com.meli.social.post.dto.PostDTO;
 import com.meli.social.post.inter.IProductRepository;
 import com.meli.social.post.inter.IPostRepository;
@@ -8,7 +10,9 @@ import com.meli.social.post.model.Post;
 import com.meli.social.post.model.Product;
 import com.meli.social.user.inter.UserJpaRepository;
 import com.meli.social.user.model.User;
+import com.meli.social.user.model.UserFollow;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,6 +20,9 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -36,7 +43,7 @@ public class PostService implements IPostService {
         }
 
         User user = userRepository.findById(newPost.getUserId())
-                .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado: " + newPost.getUserId()));
+                .orElseThrow(() -> new UserNotFoundException("Usuário não encontrado: " + newPost.getUserId()));
 
         Post post = newPost.toEntity(user, resolveDate(newPost.getDate()));
 
@@ -44,6 +51,27 @@ public class PostService implements IPostService {
 
         postRepository.save(post);
         return true;
+    }
+
+    @Override
+    public FollowedPostsDTO getFollowedPosts(Integer userId, String sort) {
+        if (!userRepository.existsById(userId)){
+            throw new UserNotFoundException("Usuário não encontrado: " + userId);
+        }
+
+        FollowedPostsDTO followedPosts =  new FollowedPostsDTO();
+        followedPosts.setUserId(userId);
+
+        List<Integer> userFollows = userRepository.findFollowingIdsByUserId(userId);
+        if (userFollows.isEmpty()) {
+            return new FollowedPostsDTO(userId, null);
+        }
+        LocalDate endDate = LocalDate.now();
+        LocalDate startDate = endDate.minusDays(14);
+
+        Sort sortSpec = (sort == null || sort.isBlank()) ? Sort.by("date").descending() : Sort.by(sort);
+        List<Post> posts = postRepository.findPostsByUserIdInAndDateBetween(userFollows, startDate, endDate, sortSpec);
+        return new FollowedPostsDTO(userId, posts);
     }
 
     private Product resolveProduct(Product product) {

@@ -1,14 +1,13 @@
 package com.meli.social.post.impl;
 
+import com.meli.social.post.dto.FollowedPostsDTO;
 import com.meli.social.post.dto.PostDTO;
 import com.meli.social.post.inter.IPostService;
+import com.meli.social.user.dto.UserWithFollowersDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/products")
@@ -22,4 +21,12 @@ public class PostController {
         postService.createPost(postDTO);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
+
+    @GetMapping("/followed/{userId}/list")
+    public ResponseEntity<FollowedPostsDTO> getFeed(
+            @PathVariable Integer userId,
+            @RequestParam(required = false) String order) {
+        return ResponseEntity.ok(postService.getFollowedPosts(userId, order));
+    }
+
 }

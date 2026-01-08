@@ -291,6 +291,170 @@ class PostControllerIntegrationTest {
                 .body("posts[1].postId", is(p3.getPostId()));
     }
 
+    @Test
+    @DisplayName("Deve trazer uma lista descendente de posts com sucesso e retornar 200")
+    void shouldReturnFeedSuccessfully_whenParamSortDesc() {
+        User user = userRepository.saveAndFlush(new User("test_user"));
+        User user2 = userRepository.saveAndFlush(new User("test_user2"));
+        User user3 = userRepository.saveAndFlush(new User("test_user3"));
+        User user4 = userRepository.saveAndFlush(new User("test_user4"));
+
+        user.follow(user2);
+        user.follow(user3);
+        // não segue user4
+
+        userRepository.saveAndFlush(user);
+        userRepository.saveAndFlush(user2);
+        userRepository.saveAndFlush(user3);
+        userRepository.saveAndFlush(user4);
+
+
+        Post p1 = new Post();
+        p1.setPostId(null);
+        p1.setDate(LocalDate.now().minusWeeks(3)); //  fora do prazo
+        Product product1 = productRepository.saveAndFlush(new Product(1, "Product 1", "Type 1", "Brand 1", "Color 1", "Notes 1"));
+        p1.setProduct(product1);
+        p1.setUser(user2);
+        p1.setCategory(1);
+        p1.setPrice(1200.50);
+        p1.setHasPromo(false);
+        p1.setDiscount(null);
+        p1.setLikesCount(0);
+
+        Post p2 = new Post();
+        p2.setPostId(null);
+        p2.setDate(LocalDate.now().minusDays(3));
+        Product product2 = productRepository.saveAndFlush(new Product(2, "Product 2", "Type 2", "Brand 2", "Color 2", "Notes 2"));
+        p2.setProduct(product2);
+        p2.setUser(user3);
+        p2.setCategory(2);
+        p2.setPrice(599.99);
+        p2.setHasPromo(false);
+        p2.setDiscount(null);
+        p2.setLikesCount(0);
+
+        Post p3 = new Post();
+        p3.setPostId(null);
+        p3.setDate(LocalDate.now().minusWeeks(1));
+        Product product3 = productRepository.saveAndFlush(new Product(3, "Product 3", "Type 3", "Brand 3", "Color 3", "Notes 3"));
+        p3.setProduct(product3);
+        p3.setUser(user2);
+        p3.setCategory(3);
+        p3.setPrice(399.99);
+        p3.setHasPromo(false);
+        p3.setDiscount(null);
+        p3.setLikesCount(0);
+
+        Post p4 = new Post(); // post dentro das duas semanas, porem de usuario nao seguido.
+        p4.setPostId(null);
+        p4.setDate(LocalDate.now().minusWeeks(1));
+        Product product4 = productRepository.saveAndFlush(new Product(4, "Product 4", "Type 4", "Brand 4", "Color 4", "Notes 4"));
+        p4.setProduct(product4);
+        p4.setUser(user4);
+        p4.setCategory(4);
+        p4.setPrice(399.99);
+        p4.setHasPromo(false);
+        p4.setDiscount(null);
+        p4.setLikesCount(0);
+
+        postRepository.save(p1);
+        postRepository.save(p2);
+        postRepository.save(p3);
+        postRepository.save(p4);
+
+        given()
+                .when()
+                .get("/followed/{userId}/list?order=date_desc", user.getUserId())
+                .then()
+                .statusCode(200)
+                .contentType(ContentType.JSON)
+                .body("posts.size()", is(2))
+                .body("posts[0].postId", is(p2.getPostId()))
+                .body("posts[1].postId", is(p3.getPostId()));
+    }
+
+    @Test
+    @DisplayName("Deve trazer uma lista ascendente de posts com sucesso e retornar 200")
+    void shouldReturnFeedSuccessfully_whenParamSortAsc() {
+        User user = userRepository.saveAndFlush(new User("test_user"));
+        User user2 = userRepository.saveAndFlush(new User("test_user2"));
+        User user3 = userRepository.saveAndFlush(new User("test_user3"));
+        User user4 = userRepository.saveAndFlush(new User("test_user4"));
+
+        user.follow(user2);
+        user.follow(user3);
+        // não segue user4
+
+        userRepository.saveAndFlush(user);
+        userRepository.saveAndFlush(user2);
+        userRepository.saveAndFlush(user3);
+        userRepository.saveAndFlush(user4);
+
+
+        Post p1 = new Post();
+        p1.setPostId(null);
+        p1.setDate(LocalDate.now().minusWeeks(3)); //  fora do prazo
+        Product product1 = productRepository.saveAndFlush(new Product(1, "Product 1", "Type 1", "Brand 1", "Color 1", "Notes 1"));
+        p1.setProduct(product1);
+        p1.setUser(user2);
+        p1.setCategory(1);
+        p1.setPrice(1200.50);
+        p1.setHasPromo(false);
+        p1.setDiscount(null);
+        p1.setLikesCount(0);
+
+        Post p2 = new Post();
+        p2.setPostId(null);
+        p2.setDate(LocalDate.now().minusDays(3));
+        Product product2 = productRepository.saveAndFlush(new Product(2, "Product 2", "Type 2", "Brand 2", "Color 2", "Notes 2"));
+        p2.setProduct(product2);
+        p2.setUser(user3);
+        p2.setCategory(2);
+        p2.setPrice(599.99);
+        p2.setHasPromo(false);
+        p2.setDiscount(null);
+        p2.setLikesCount(0);
+
+        Post p3 = new Post();
+        p3.setPostId(null);
+        p3.setDate(LocalDate.now().minusWeeks(1));
+        Product product3 = productRepository.saveAndFlush(new Product(3, "Product 3", "Type 3", "Brand 3", "Color 3", "Notes 3"));
+        p3.setProduct(product3);
+        p3.setUser(user2);
+        p3.setCategory(3);
+        p3.setPrice(399.99);
+        p3.setHasPromo(false);
+        p3.setDiscount(null);
+        p3.setLikesCount(0);
+
+        Post p4 = new Post(); // post dentro das duas semanas, porem de usuario nao seguido.
+        p4.setPostId(null);
+        p4.setDate(LocalDate.now().minusWeeks(1));
+        Product product4 = productRepository.saveAndFlush(new Product(4, "Product 4", "Type 4", "Brand 4", "Color 4", "Notes 4"));
+        p4.setProduct(product4);
+        p4.setUser(user4);
+        p4.setCategory(4);
+        p4.setPrice(399.99);
+        p4.setHasPromo(false);
+        p4.setDiscount(null);
+        p4.setLikesCount(0);
+
+        postRepository.save(p1);
+        postRepository.save(p2);
+        postRepository.save(p3);
+        postRepository.save(p4);
+
+        given()
+                .when()
+                .get("/followed/{userId}/list?order=date_asc", user.getUserId())
+                .then()
+                .statusCode(200)
+                .contentType(ContentType.JSON)
+                .body("posts.size()", is(2))
+                .body("posts[0].postId", is(p3.getPostId()))
+                .body("posts[1].postId", is(p2.getPostId()));
+    }
+
 
     @Test
     @DisplayName("Deve retornar 404 quando usuário não existe")

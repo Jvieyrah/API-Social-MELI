@@ -84,23 +84,23 @@ INSERT INTO products (product_id, product_name, type, brand, color, notes) VALUE
 -- Inserir posts
 -- Posts de joaosilva (1)
 INSERT INTO posts (post_id, user_id, date, product_id, category, price, has_promo, discount, likes_count) VALUES
-                                                                                                               (1, 1, '2025-12-10', 101, 58, 299.90, true, 50.00, 0),
-                                                                                                               (2, 1, '2025-12-12', 102, 58, 599.90, false, 0, 0);
+                                                                                                               (1, 1, '2026-01-07', 101, 58, 299.90, true, 50.00, 0),
+                                                                                                               (2, 1, '2026-01-06', 102, 58, 599.90, false, 0, 0);
 
 -- Posts de mariasantos (2)
 INSERT INTO posts (post_id, user_id, date, product_id, category, price, has_promo, discount, likes_count) VALUES
-                                                                                                               (3, 2, '2025-12-05', 201, 100, 1299.00, true, 200.00, 0),
-                                                                                                               (4, 2, '2025-12-14', 202, 100, 450.00, false, 0, 0);
+                                                                                                               (3, 2, '2026-01-05', 201, 100, 1299.00, true, 200.00, 0),
+                                                                                                               (4, 2, '2026-01-04', 202, 100, 450.00, false, 0, 0);
 
 -- Posts de pedrocoста (3)
 INSERT INTO posts (post_id, user_id, date, product_id, category, price, has_promo, discount, likes_count) VALUES
-                                                                                                               (5, 3, '2025-12-08', 301, 25, 4500.00, true, 500.00, 0),
-                                                                                                               (6, 3, '2025-12-15', 302, 25, 899.00, false, 0, 0);
+                                                                                                               (5, 3, '2026-01-03', 301, 25, 4500.00, true, 500.00, 0),
+                                                                                                               (6, 3, '2026-01-02', 302, 25, 899.00, false, 0, 0);
 
 -- Posts de carlosmendes (5)
 INSERT INTO posts (post_id, user_id, date, product_id, category, price, has_promo, discount, likes_count) VALUES
-                                                                                                               (7, 5, '2025-12-03', 501, 45, 699.00, true, 100.00, 0),
-                                                                                                               (8, 5, '2025-12-11', 502, 45, 349.00, true, 50.00, 0),
+                                                                                                               (7, 5, '2026-01-01', 501, 45, 699.00, true, 100.00, 0),
+                                                                                                               (8, 5, '2026-01-07', 502, 45, 349.00, true, 50.00, 0),
                                                                                                                (9, 5, '2025-12-16', 503, 45, 899.00, false, 0, 0);
 
 -- Posts de juliaferreira (6)

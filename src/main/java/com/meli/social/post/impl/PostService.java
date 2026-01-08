@@ -68,8 +68,9 @@ public class PostService implements IPostService {
         }
         LocalDate endDate = LocalDate.now();
         LocalDate startDate = endDate.minusDays(14);
-
-        Sort sortSpec = (sort == null || sort.isBlank()) ? Sort.by("date").descending() : Sort.by(sort);
+        Sort sortSpec = (sort == null || sort.isBlank() || sort.equalsIgnoreCase("date_desc"))
+                ? Sort.by("date").descending()
+                : sort.equalsIgnoreCase("date_asc") ? Sort.by("date").ascending() : Sort.by("date").descending();
         List<Post> posts = postRepository.findPostsByUserIdInAndDateBetween(userFollows, startDate, endDate, sortSpec);
         return new FollowedPostsDTO(userId, posts);
     }

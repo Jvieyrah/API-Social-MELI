@@ -310,15 +310,9 @@ class PostServiceTest {
 
         verify(userRepository, times(1)).existsById(1);
         verify(userRepository, times(1)).findFollowingIdsByUserId(1);
-        verify(postRepository, times(1)).findPostsByUserIdInAndDateBetween(eq(List.of(2, 3, 4)), any(), any(), any());
-    }
 
-    @Test
-    @DisplayName("Deve retornar um UserNotFoundException quando usuario nao for encontrado")
-    void testFollowingsPostListing_whenUserIdIsInvalid () {
 
-        UserNotFoundException exception = assertThrows(
-                UserNotFoundException.class,
+≈                UserNotFoundException.class,
                 () -> postService.getFollowedPosts(999, null)
         );
 

@@ -38,8 +38,8 @@ public class FollowIntegrationTest {
     @Order(1)
     @DisplayName("Deve seguir um usuário com sucesso")
     void testFollowUser_Success() {
-        User userA = createAndSaveUser("user_a");
-        User userB = createAndSaveUser("user_b");
+        User userA = createAndSaveUser("usera");
+        User userB = createAndSaveUser("userb");
 
         given()
                 .contentType(ContentType.JSON)
@@ -53,7 +53,7 @@ public class FollowIntegrationTest {
     @Order(2)
     @DisplayName("Deve retornar 400 quando usuário tenta seguir a si mesmo")
     void testFollowUser_WhenUserTriesToFollowHimself() {
-        User user = createAndSaveUser("test_user");
+        User user = createAndSaveUser("testuser");
 
         given()
                 .contentType(ContentType.JSON)
@@ -67,8 +67,8 @@ public class FollowIntegrationTest {
     @Order(3)
     @DisplayName("Deve retornar 400 quando usuário já segue o outro")
     void testFollowUser_WhenAlreadyFollowing() {
-        User userA = createAndSaveUser("user_a");
-        User userB = createAndSaveUser("user_b");
+        User userA = createAndSaveUser("usera");
+        User userB = createAndSaveUser("userb");
 
         // Seguir pela primeira vez
         given()
@@ -89,7 +89,7 @@ public class FollowIntegrationTest {
     @Order(4)
     @DisplayName("Deve retornar 404 quando follower não existe")
     void testFollowUser_WhenFollowerDoesNotExist() {
-        User userB = createAndSaveUser("user_b");
+        User userB = createAndSaveUser("userb");
 
         given()
                 .when()
@@ -102,7 +102,7 @@ public class FollowIntegrationTest {
     @Order(5)
     @DisplayName("Deve retornar 404 quando followed não existe")
     void testFollowUser_WhenFollowedDoesNotExist() {
-        User userA = createAndSaveUser("user_a");
+        User userA = createAndSaveUser("usera");
 
         given()
                 .when()
@@ -117,8 +117,8 @@ public class FollowIntegrationTest {
     @Order(6)
     @DisplayName("Deve deixar de seguir um usuário com sucesso")
     void testUnfollowUser_Success() {
-        User userA = createAndSaveUser("user_a");
-        User userB = createAndSaveUser("user_b");
+        User userA = createAndSaveUser("usera");
+        User userB = createAndSaveUser("userb");
 
         // Follow
         given()
@@ -139,7 +139,7 @@ public class FollowIntegrationTest {
     @Order(7)
     @DisplayName("Deve retornar 400 quando usuário tenta deixar de seguir a si mesmo")
     void testUnfollowUser_WhenUserTriesToUnfollowHimself() {
-        User user = createAndSaveUser("test_user");
+        User user = createAndSaveUser("testuser");
 
         given()
                 .when()
@@ -152,8 +152,8 @@ public class FollowIntegrationTest {
     @Order(8)
     @DisplayName("Deve retornar 400 quando usuário não segue o outro")
     void testUnfollowUser_WhenNotFollowing() {
-        User userA = createAndSaveUser("user_a");
-        User userB = createAndSaveUser("user_b");
+        User userA = createAndSaveUser("usera");
+        User userB = createAndSaveUser("userb");
 
         given()
                 .when()
@@ -167,8 +167,8 @@ public class FollowIntegrationTest {
     @Order(11)
     @DisplayName("Deve permitir seguir novamente após deixar de seguir")
     void testFollowAgainAfterUnfollow() {
-        User userA = createAndSaveUser("user_a");
-        User userB = createAndSaveUser("user_b");
+        User userA = createAndSaveUser("usera");
+        User userB = createAndSaveUser("userb");
 
         // Seguir
         given().post("/users/{userId}/follow/{userIdToFollow}", userA.getUserId(), userB.getUserId()).then().statusCode(200);
@@ -184,9 +184,9 @@ public class FollowIntegrationTest {
     @Order(12)
     @DisplayName("Deve permitir múltiplos usuários seguirem o mesmo usuário")
     void testMultipleUsersFollowSameUser() {
-        User userA = createAndSaveUser("user_a");
-        User userB = createAndSaveUser("user_b");
-        User userC = createAndSaveUser("user_c");
+        User userA = createAndSaveUser("usera");
+        User userB = createAndSaveUser("userb");
+        User userC = createAndSaveUser("userc");
 
         given().post("/users/{userId}/follow/{userIdToFollow}", userA.getUserId(), userC.getUserId()).then().statusCode(200);
         given().post("/users/{userId}/follow/{userIdToFollow}", userB.getUserId(), userC.getUserId()).then().statusCode(200);
@@ -196,9 +196,9 @@ public class FollowIntegrationTest {
     @Order(13)
     @DisplayName("Deve permitir um usuário seguir múltiplos usuários")
     void testUserFollowsMultipleUsers() {
-        User userA = createAndSaveUser("user_a");
-        User userB = createAndSaveUser("user_b");
-        User userC = createAndSaveUser("user_c");
+        User userA = createAndSaveUser("usera");
+        User userB = createAndSaveUser("userb");
+        User userC = createAndSaveUser("userc");
 
         given().post("/users/{userId}/follow/{userIdToFollow}", userA.getUserId(), userB.getUserId()).then().statusCode(200);
         given().post("/users/{userId}/follow/{userIdToFollow}", userA.getUserId(), userC.getUserId()).then().statusCode(200);
@@ -208,7 +208,7 @@ public class FollowIntegrationTest {
     @Order(14)
     @DisplayName("Deve retornar um usuário com nenhum seguidor")
     void testGetFollowersCount_WhenUserHasNoFollowers() {
-        User user = createAndSaveUser("user_x");
+        User user = createAndSaveUser("userx");
 
         given()
                 .when()
@@ -225,8 +225,8 @@ public class FollowIntegrationTest {
     @DisplayName("Deve retornar a contagem correta de seguidores")
     void testGetFollowersCount_WhenUserHasFollowers() {
         User target = createAndSaveUser("target");
-        User followerA = createAndSaveUser("follower_a");
-        User followerB = createAndSaveUser("follower_b");
+        User followerA = createAndSaveUser("followera");
+        User followerB = createAndSaveUser("followerb");
 
         given().post("/users/{userId}/follow/{userIdToFollow}", followerA.getUserId(), target.getUserId()).then().statusCode(200);
         given().post("/users/{userId}/follow/{userIdToFollow}", followerB.getUserId(), target.getUserId()).then().statusCode(200);

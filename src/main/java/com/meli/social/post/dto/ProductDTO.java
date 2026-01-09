@@ -4,6 +4,9 @@ import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.meli.social.post.model.Product;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -18,14 +21,28 @@ public class ProductDTO {
     private Integer productId;
 
     @JsonAlias("productName")
+    @NotBlank
+    @Size(max = 40)
+    @Pattern(regexp = "^[\\p{L}\\p{N} ]+$")
     private String productName;
 
+    @NotBlank
+    @Size(max = 40)
+    @Pattern(regexp = "^[\\p{L}\\p{N} ]+$")
     private String type;
 
+    @NotBlank
+    @Size(max = 40)
+    @Pattern(regexp = "^[\\p{L}\\p{N} ]+$")
     private String brand;
 
+    @NotBlank
+    @Size(max = 15)
+    @Pattern(regexp = "^[\\p{L}\\p{N} ]+$")
     private String color;
 
+    @Size(max = 15)
+    @Pattern(regexp = "^[\\p{L}\\p{N} ]+$")
     private String notes;
 
     public Product toEntity() {

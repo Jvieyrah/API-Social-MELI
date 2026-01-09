@@ -4,6 +4,9 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.meli.social.post.model.Post;
 import com.meli.social.post.model.PostLike;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 
 import java.util.HashSet;
@@ -23,7 +26,10 @@ public class User {
     @Column(name = "user_id")
     private Integer userId;
 
-    @Column(name = "user_name", unique = true, nullable = false)
+    @Column(name = "user_name", unique = true, nullable = false, length = 15)
+    @NotNull
+    @Size(max = 15)
+    @Pattern(regexp = "^[\\p{L}\\p{N} ]+$")
     private String userName;
 
     @Column(name = "followers_count")

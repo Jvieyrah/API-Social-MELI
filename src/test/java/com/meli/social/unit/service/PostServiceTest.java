@@ -312,7 +312,8 @@ class PostServiceTest {
         verify(userRepository, times(1)).findFollowingIdsByUserId(1);
 
 
-≈                UserNotFoundException.class,
+        UserNotFoundException exception = assertThrows(
+                UserNotFoundException.class,
                 () -> postService.getFollowedPosts(999, null)
         );
 

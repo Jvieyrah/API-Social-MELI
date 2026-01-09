@@ -70,14 +70,14 @@ INSERT INTO user_follows (follower_id, followed_id, followed_at) VALUES
 INSERT INTO products (product_id, product_name, type, brand, color, notes) VALUES
                                                                                  (101, 'Mouse Gamer RGB', 'Periférico', 'Logitech', 'Preto', 'Alta precisão'),
                                                                                  (102, 'Teclado Mecânico', 'Periférico', 'Razer', 'Preto', 'Switch Blue'),
-                                                                                 (201, 'Cadeira Gamer', 'Móvel', 'DXRacer', 'Vermelho', 'Ergonômica com apoio lombar'),
-                                                                                 (202, 'Mesa para Computador', 'Móvel', 'Madesa', 'Branco', 'Com suporte para monitor'),
-                                                                                 (301, 'Notebook Dell', 'Eletrônico', 'Dell', 'Prata', 'i7 16GB RAM 512GB SSD'),
+                                                                                 (201, 'Cadeira Gamer', 'Móvel', 'DXRacer', 'Vermelho', 'Ergonomica'),
+                                                                                 (202, 'Mesa para Computador', 'Móvel', 'Madesa', 'Branco', 'Suporte monitor'),
+                                                                                 (301, 'Notebook Dell', 'Eletrônico', 'Dell', 'Prata', 'i7 16GB 512SSD'),
                                                                                  (302, 'Monitor 27 polegadas', 'Eletrônico', 'LG', 'Preto', 'Full HD IPS'),
-                                                                                 (501, 'Fone Bluetooth', 'Áudio', 'Sony', 'Preto', 'Cancelamento de ruído'),
+                                                                                 (501, 'Fone Bluetooth', 'Áudio', 'Sony', 'Preto', 'Cancelamento'),
                                                                                  (502, 'Caixa de Som Portátil', 'Áudio', 'JBL', 'Azul', 'À prova d água'),
                                                                                  (503, 'Microfone USB', 'Áudio', 'Blue Yeti', 'Preto', 'Para streaming'),
-                                                                                 (601, 'Webcam Full HD', 'Eletrônico', 'Logitech', 'Preto', 'Para videochamadas'),
+                                                                                 (601, 'Webcam Full HD', 'Eletrônico', 'Logitech', 'Preto', 'Videochamadas'),
                                                                                  (901, 'SSD 1TB', 'Hardware', 'Kingston', 'Preto', 'NVMe Gen4'),
                                                                                  (902, 'Placa de Vídeo RTX', 'Hardware', 'NVIDIA', 'Preto', '8GB GDDR6');
 

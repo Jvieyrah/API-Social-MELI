@@ -42,7 +42,7 @@ class UserControllerIntegrationTest {
     @DisplayName("Deve criar um novo usuário com sucesso")
     void shouldCreateNewUserSuccessfully() {
         Map<String, String> request = new HashMap<>();
-        request.put("userName", "joao_silva");
+        request.put("userName", "joaosilva");
 
         UserSimpleDTO response = given()
                 .contentType(ContentType.JSON)
@@ -53,12 +53,12 @@ class UserControllerIntegrationTest {
                 .statusCode(201)
                 .contentType(ContentType.JSON)
                 .body("userId", notNullValue())
-                .body("userName", equalTo("joao_silva"))
+                .body("userName", equalTo("joaosilva"))
                 .extract()
                 .as(UserSimpleDTO.class);
 
-        assertThat(response.getUserName()).isEqualTo("joao_silva");
-        assertThat(userRepository.existsByUserName("joao_silva")).isTrue();
+        assertThat(response.getUserName()).isEqualTo("joaosilva");
+        assertThat(userRepository.existsByUserName("joaosilva")).isTrue();
     }
 
     @Test
@@ -86,7 +86,7 @@ class UserControllerIntegrationTest {
     @DisplayName("Deve retornar erro 400 quando username já existe")
     void shouldReturn400WhenUsernameAlreadyExists() {
         Map<String, String> request = new HashMap<>();
-        request.put("userName", "maria_santos");
+        request.put("userName", "mariasantos");
 
         given().contentType(ContentType.JSON).body(request).post().then().statusCode(201);
 
@@ -97,7 +97,7 @@ class UserControllerIntegrationTest {
                 .post()
                 .then()
                 .statusCode(400)
-                .body("message", equalTo("Username já existe: maria_santos"));
+                .body("message", equalTo("Username já existe: mariasantos"));
 
         assertThat(userRepository.count()).isEqualTo(1);
     }
@@ -125,9 +125,9 @@ class UserControllerIntegrationTest {
     @Test
     @DisplayName("Deve retornar a lista de following do usuário")
     void shouldReturnUserFollowingList() {
-        User userA = createAndSaveUser("user_a");
-        User userB = createAndSaveUser("user_b");
-        User userC = createAndSaveUser("user_c");
+        User userA = createAndSaveUser("usera");
+        User userB = createAndSaveUser("userb");
+        User userC = createAndSaveUser("userc");
 
         given().when().post("/{userId}/follow/{userIdToFollow}", userA.getUserId(), userB.getUserId()).then().statusCode(200);
         given().when().post("/{userId}/follow/{userIdToFollow}", userA.getUserId(), userC.getUserId()).then().statusCode(200);
@@ -148,7 +148,7 @@ class UserControllerIntegrationTest {
     @Test
     @DisplayName("Deve retornar a lista de following do usuário em ordem alfabética cescente")
     void shouldReturnUserFollowingList_ascending() {
-        User userA = createAndSaveUser("user_a");
+        User userA = createAndSaveUser("usera");
         User userB = createAndSaveUser("ana");
         User userC = createAndSaveUser("bruno");
 
@@ -171,7 +171,7 @@ class UserControllerIntegrationTest {
     @Test
     @DisplayName("Deve retornar a lista de following do usuário em ordem alfabética decrescente")
     void shouldReturnUserFollowingList_descending() {
-        User userA = createAndSaveUser("user_a");
+        User userA = createAndSaveUser("usera");
         User userB = createAndSaveUser("ana");
         User userC = createAndSaveUser("bruno");
 
@@ -194,7 +194,7 @@ class UserControllerIntegrationTest {
     @Test
     @DisplayName("Deve retornar 400 ao buscar following com order inválido")
     void shouldReturn400WhenGetFollowingWithInvalidOrder() {
-        User userA = createAndSaveUser("user_a");
+        User userA = createAndSaveUser("usera");
         User userB = createAndSaveUser("ana");
         User userC = createAndSaveUser("bruno");
 
@@ -233,9 +233,9 @@ class UserControllerIntegrationTest {
     @Test
     @DisplayName("Deve retornar a lista de followers do usuário")
     void shouldReturnUserFollowersList() {
-        User userA = createAndSaveUser("user_a");
-        User userB = createAndSaveUser("user_b");
-        User userC = createAndSaveUser("user_c");
+        User userA = createAndSaveUser("usera");
+        User userB = createAndSaveUser("userb");
+        User userC = createAndSaveUser("userc");
 
         given().when().post("/{userId}/follow/{userIdToFollow}", userB.getUserId(), userA.getUserId()).then().statusCode(200);
         given().when().post("/{userId}/follow/{userIdToFollow}", userC.getUserId(), userA.getUserId()).then().statusCode(200);
@@ -256,7 +256,7 @@ class UserControllerIntegrationTest {
     @Test
     @DisplayName("Deve retornar a lista de followers do usuário em ordem alfabética cescente")
     void shouldReturnUserFollowersListInAlphabeticalOrderAscending() {
-        User userA = createAndSaveUser("user_a");
+        User userA = createAndSaveUser("usera");
         User userB = createAndSaveUser("ana");
         User userC = createAndSaveUser("bruno");
 
@@ -279,7 +279,7 @@ class UserControllerIntegrationTest {
     @Test
     @DisplayName("Deve retornar a lista de followers do usuário em ordem alfabética decrescente")
     void shouldReturnUserFollowersListInAlphabeticalOrderDescending() {
-        User userA = createAndSaveUser("user_a");
+        User userA = createAndSaveUser("usera");
         User userB = createAndSaveUser("ana");
         User userC = createAndSaveUser("bruno");
 
@@ -302,7 +302,7 @@ class UserControllerIntegrationTest {
     @Test
     @DisplayName("Deve retornar 400 ao buscar followers com order inválido")
     void shouldReturn400WhenGetFollowersWithInvalidOrder() {
-        User userA = createAndSaveUser("user_a");
+        User userA = createAndSaveUser("usera");
         User userB = createAndSaveUser("ana");
         User userC = createAndSaveUser("bruno");
 

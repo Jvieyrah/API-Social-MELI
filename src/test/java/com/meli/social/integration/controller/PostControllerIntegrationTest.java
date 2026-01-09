@@ -56,7 +56,7 @@ class PostControllerIntegrationTest {
     @Test
     @DisplayName("Deve publicar um post com sucesso e retornar 201")
     void shouldPublishPostSuccessfully() {
-        User user = userRepository.saveAndFlush(new User("user_test"));
+        User user = userRepository.saveAndFlush(new User("usertest"));
 
         Map<String, Object> product = new HashMap<>();
         product.put("productId", 1001);
@@ -92,12 +92,20 @@ class PostControllerIntegrationTest {
         Product productToSave = new Product(1001, "Mouse Gamer", "Periférico", "Logitech", "Preto", "Teste");
         productRepository.save(productToSave);
 
-        User user = userRepository.saveAndFlush(new User("user_test"));
+        User user = userRepository.saveAndFlush(new User("usertest"));
+
+        Map<String, Object> product = new HashMap<>();
+        product.put("productId", 1001);
+        product.put("productName", "Mouse Gamer");
+        product.put("type", "Periférico");
+        product.put("brand", "Logitech");
+        product.put("color", "Preto");
+        product.put("notes", "Teste");
 
         Map<String, Object> request = new HashMap<>();
         request.put("userId", user.getUserId());
         request.put("date", "2025-02-01");
-        request.put("product", productToSave);
+        request.put("product", product);
         request.put("category", 58);
         request.put("price", 299.90);
 
@@ -122,6 +130,10 @@ class PostControllerIntegrationTest {
         Map<String, Object> product = new HashMap<>();
         product.put("productId", 1001);
         product.put("productName", "Mouse Gamer");
+        product.put("type", "Periférico");
+        product.put("brand", "Logitech");
+        product.put("color", "Preto");
+        product.put("notes", "Teste");
 
         Map<String, Object> request = new HashMap<>();
         request.put("userId", null);
@@ -152,6 +164,10 @@ class PostControllerIntegrationTest {
         Map<String, Object> product = new HashMap<>();
         product.put("productId", 1001);
         product.put("productName", "Mouse Gamer");
+        product.put("type", "Periférico");
+        product.put("brand", "Logitech");
+        product.put("color", "Preto");
+        product.put("notes", "Teste");
 
         Map<String, Object> request = new HashMap<>();
         request.put("userId", 99999);
@@ -179,11 +195,15 @@ class PostControllerIntegrationTest {
     @Test
     @DisplayName("Deve retornar 400 quando data for inválida")
     void shouldReturn400WhenDateIsInvalid() {
-        User user = userRepository.saveAndFlush(new User("user_test"));
+        User user = userRepository.saveAndFlush(new User("usertest"));
 
         Map<String, Object> product = new HashMap<>();
         product.put("productId", 1001);
         product.put("productName", "Mouse Gamer");
+        product.put("type", "Periférico");
+        product.put("brand", "Logitech");
+        product.put("color", "Preto");
+        product.put("notes", "Teste");
 
         Map<String, Object> request = new HashMap<>();
         request.put("userId", user.getUserId());
@@ -212,10 +232,10 @@ class PostControllerIntegrationTest {
     @Test
     @DisplayName("Deve trazer uma lista de posts com sucesso e retornar 200")
     void shouldReturnFeedSuccessfully_whenUserIdExists() {
-        User user = userRepository.saveAndFlush(new User("test_user"));
-        User user2 = userRepository.saveAndFlush(new User("test_user2"));
-        User user3 = userRepository.saveAndFlush(new User("test_user3"));
-        User user4 = userRepository.saveAndFlush(new User("test_user4"));
+        User user = userRepository.saveAndFlush(new User("testuser"));
+        User user2 = userRepository.saveAndFlush(new User("testuser2"));
+        User user3 = userRepository.saveAndFlush(new User("testuser3"));
+        User user4 = userRepository.saveAndFlush(new User("testuser4"));
 
         user.follow(user2);
         user.follow(user3);
@@ -294,10 +314,10 @@ class PostControllerIntegrationTest {
     @Test
     @DisplayName("Deve trazer uma lista descendente de posts com sucesso e retornar 200")
     void shouldReturnFeedSuccessfully_whenParamSortDesc() {
-        User user = userRepository.saveAndFlush(new User("test_user"));
-        User user2 = userRepository.saveAndFlush(new User("test_user2"));
-        User user3 = userRepository.saveAndFlush(new User("test_user3"));
-        User user4 = userRepository.saveAndFlush(new User("test_user4"));
+        User user = userRepository.saveAndFlush(new User("testuser"));
+        User user2 = userRepository.saveAndFlush(new User("testuser2"));
+        User user3 = userRepository.saveAndFlush(new User("testuser3"));
+        User user4 = userRepository.saveAndFlush(new User("testuser4"));
 
         user.follow(user2);
         user.follow(user3);
@@ -376,10 +396,10 @@ class PostControllerIntegrationTest {
     @Test
     @DisplayName("Deve trazer uma lista ascendente de posts com sucesso e retornar 200")
     void shouldReturnFeedSuccessfully_whenParamSortAsc() {
-        User user = userRepository.saveAndFlush(new User("test_user"));
-        User user2 = userRepository.saveAndFlush(new User("test_user2"));
-        User user3 = userRepository.saveAndFlush(new User("test_user3"));
-        User user4 = userRepository.saveAndFlush(new User("test_user4"));
+        User user = userRepository.saveAndFlush(new User("testuser"));
+        User user2 = userRepository.saveAndFlush(new User("testuser2"));
+        User user3 = userRepository.saveAndFlush(new User("testuser3"));
+        User user4 = userRepository.saveAndFlush(new User("testuser4"));
 
         user.follow(user2);
         user.follow(user3);

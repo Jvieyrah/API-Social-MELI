@@ -3,7 +3,7 @@ package com.meli.social.post.impl;
 import com.meli.social.post.dto.FollowedPostsDTO;
 import com.meli.social.post.dto.PostDTO;
 import com.meli.social.post.inter.IPostService;
-import com.meli.social.user.dto.UserWithFollowersDTO;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,7 +17,7 @@ public class PostController {
     private final IPostService postService;
 
     @PostMapping("/publish")
-    public ResponseEntity<Void> publish(@RequestBody PostDTO postDTO) {
+    public ResponseEntity<Void> publish(@Valid @RequestBody PostDTO postDTO) {
         postService.createPost(postDTO);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }

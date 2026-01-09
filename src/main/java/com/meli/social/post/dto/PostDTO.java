@@ -5,6 +5,10 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.meli.social.post.model.Post;
 import com.meli.social.user.model.User;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.DecimalMax;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -17,11 +21,24 @@ import java.time.LocalDate;
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class PostDTO {
 
-    @JsonAlias("userId")
+    @JsonAlias({"userId", "user_id"})
     private Integer userId;
+
+    @JsonAlias({"date"})
     private String date;
+
+    @Valid
+    @NotNull
+    @JsonAlias({"product"})
     private ProductDTO product;
+
+    @NotNull
+    @JsonAlias({"category"})
     private Integer category;
+
+    @NotNull
+    @DecimalMax("10000000")
+    @JsonAlias({"price"})
     private Double price;
 
     public Post toEntity(User user, LocalDate date) {

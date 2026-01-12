@@ -305,6 +305,10 @@ target/site/jacoco/index.html
 ## 📈 Monitoramento e Resiliência
 
 - **Health Checks**: Endpoints de saúde da aplicação
+
+```
+http://localhost:8080/healthcheck
+```
 - **Restart Policy**: `unless-stopped` para alta disponibilidade
 
 ## 🎁 Funcionalidades Bônus (Opcionais)

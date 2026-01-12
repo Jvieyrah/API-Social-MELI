@@ -41,18 +41,6 @@ public class UserController {
         return ResponseEntity.ok(userService.getTopUsers(limit));
     }
 
-//    @GetMapping("/top/details")
-//    public ResponseEntity<List<UserDTO>> getTopUsersWithDetails(
-//            @RequestParam(defaultValue = "10") int limit
-//    ) {
-//        return ResponseEntity.ok(userService.getTopUsersWithDetails(limit));
-//    }
-
-//    @GetMapping("/{userId}")
-//    public ResponseEntity<UserDTO> getUserDetails(@PathVariable Integer userId) {
-//        return ResponseEntity.ok(userService.getUserWithDetails(userId));
-//    }
-
     @PostMapping("/{userId}/follow/{userIdToFollow}")
     public ResponseEntity<Void> followUser(
             @PathVariable Integer userId,

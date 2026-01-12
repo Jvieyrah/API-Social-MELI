@@ -13,47 +13,12 @@ public interface IUserService {
 
     UserSimpleDTO createUser(String userName);
 
-    Optional<User> getUserById(Integer userId);
-
-    Optional<User> getUserByUserName(String userName);
-
-    List<User> getAllUsers();
-
-    List<User> getAllUsersOrdered(String order);
-
-    void deleteUser(Integer userId);
-
-    boolean existsUser(Integer userId);
-
-    boolean existsUserByUserName(String userName);
-
-    long countUsers();
-
-    Integer getFollowersCount(Integer userId);
-
     UserWithFollowersDTO getFollowers(Integer userId);
 
     UserWithFollowersDTO getFollowers(Integer userId, String order);
 
     UserWithFollowedDTO getFollowing(Integer userId, String order);
 
-    Integer getFollowingCount(Integer userId);
-
-    List<User> getMutualFollowers(Integer userId);
-
-    List<User> getSuggestedUsers(Integer userId);
-
     List<UserDTO> getTopUsers(int limit);
 
-    List<User> getUsersWithPosts();
-
-    List<User> getUsersByIds(List<Integer> userIds);
-
-    List<User> getUsersNotFollowingAnyone();
-
-    List<User> getUsersWithoutFollowers();
-
-    List<User> searchUsers(String partialName);
-
-    void updateFollowersCount(Integer userId);
 }

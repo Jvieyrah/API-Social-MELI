@@ -2,7 +2,6 @@ package com.meli.social.user.inter;
 
 import com.meli.social.user.model.User;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -82,30 +81,6 @@ public interface UserJpaRepository extends JpaRepository<User, Integer> {
                         @Param("followedId") Integer followedId);
 
 
-    @Query("""
-        SELECT COUNT(uf) > 0 
-        FROM UserFollow uf 
-        WHERE uf.follower.userId = :followerId 
-        AND uf.followed.userId = :followedId
-        """)
-    boolean existsFollow(@Param("followerId") Integer followerId,
-                         @Param("followedId") Integer followedId);
-
-    @Query("""
-        SELECT DISTINCT u FROM User u
-        LEFT JOIN FETCH u.following uf
-        LEFT JOIN FETCH uf.followed
-        WHERE u.userId = :userId
-        """)
-    Optional<User> findByIdWithFollowing(@Param("userId") Integer userId);
-
-    @Query("""
-        SELECT DISTINCT u FROM User u
-        LEFT JOIN FETCH u.followers uf
-        LEFT JOIN FETCH uf.follower
-        WHERE u.userId = :userId
-        """)
-    Optional<User> findByIdWithFollowers(@Param("userId") Integer userId);
 
     @Query("""
         SELECT DISTINCT u FROM User u
@@ -134,12 +109,6 @@ public interface UserJpaRepository extends JpaRepository<User, Integer> {
         """)
     Integer countFollowingByUserId(@Param("userId") Integer userId);
 
-    @Query("""
-        SELECT COUNT(uf) 
-        FROM UserFollow uf 
-        WHERE uf.followed.userId = :userId
-        """)
-    Integer countFollowersByUserId(@Param("userId") Integer userId);
 
     @Query("""
         SELECT u FROM User u 
@@ -186,32 +155,6 @@ public interface UserJpaRepository extends JpaRepository<User, Integer> {
         """)
     List<User> findSuggestedUsers(@Param("userId") Integer userId);
 
-    @Query("""
-        SELECT DISTINCT uf2.followed 
-        FROM UserFollow uf1 
-        JOIN UserFollow uf2 ON uf1.followed.userId = uf2.follower.userId
-        WHERE uf1.follower.userId = :userId 
-        AND uf2.followed.userId <> :userId 
-        AND NOT EXISTS (
-            SELECT 1 FROM UserFollow uf3 
-            WHERE uf3.follower.userId = :userId 
-            AND uf3.followed.userId = uf2.followed.userId
-        )
-        ORDER BY uf2.followed.followersCount DESC
-        """)
-    List<User> findSuggestedUsersOrderedByPopularity(@Param("userId") Integer userId, Pageable pageable);
-
-    @Query("""
-        SELECT u FROM User u 
-        WHERE u.userId <> :userId 
-        AND NOT EXISTS (
-            SELECT 1 FROM UserFollow uf 
-            WHERE uf.follower.userId = :userId 
-            AND uf.followed.userId = u.userId
-        )
-        ORDER BY u.followersCount DESC
-        """)
-    List<User> findPopularUsersNotFollowing(@Param("userId") Integer userId, Pageable pageable);
 
     @Query("""
         SELECT uf.followed.userId 
@@ -220,22 +163,6 @@ public interface UserJpaRepository extends JpaRepository<User, Integer> {
         """)
     List<Integer> findFollowingIdsByUserId(@Param("userId") Integer userId);
 
-    @Query("""
-        SELECT uf.follower.userId 
-        FROM UserFollow uf 
-        WHERE uf.followed.userId = :userId
-        """)
-    List<Integer> findFollowerIdsByUserId(@Param("userId") Integer userId);
-
-    @Query("""
-    SELECT DISTINCT u FROM User u
-    LEFT JOIN FETCH u.followers uf1
-    LEFT JOIN FETCH uf1.follower
-    LEFT JOIN FETCH u.following uf2
-    LEFT JOIN FETCH uf2.followed
-    WHERE u.userId IN :userIds
-    """)
-    List<User> findByIdInWithRelations(@Param("userIds") List<Integer> userIds);
 
     @Query("SELECT u FROM User u WHERE u.userId = :userId")
     Optional<User> findById(@Param("userId") Integer userId);

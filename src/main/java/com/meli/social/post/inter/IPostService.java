@@ -13,4 +13,8 @@ public interface IPostService {
     PromoProductsCountDTO getPromoProductsCount(Integer userId);
 
     PromoProducsListDTO getPromoProductsList(Integer userId);
+
+    void likePost(Integer postId, Integer userId);
+
+    void unlikePost(Integer postId, Integer userId);
 }

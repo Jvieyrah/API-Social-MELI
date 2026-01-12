@@ -46,4 +46,22 @@ public class PostController {
         return ResponseEntity.ok(postService.getPromoProductsList(userId));
     }
 
+    @PostMapping("/{postId}/like/{userId}")
+    public ResponseEntity<Void> likePost(
+            @PathVariable Integer postId,
+            @PathVariable Integer userId
+    ) {
+        postService.likePost(postId, userId);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/{postId}/unlike/{userId}")
+    public ResponseEntity<Void> unlikePost(
+            @PathVariable Integer postId,
+            @PathVariable Integer userId
+    ) {
+        postService.unlikePost(postId, userId);
+        return ResponseEntity.ok().build();
+    }
+
 }

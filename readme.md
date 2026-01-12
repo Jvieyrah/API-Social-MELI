@@ -19,24 +19,21 @@ Este projeto foi desenvolvido para aplicar os conceitos aprendidos durante o Boo
 - **Java 21** (Eclipse Temurin)
 - **Spring Boot 4.0.0**
 - **Spring Data JPA** - Persistência de dados
-- **Spring Security** - Segurança e autenticação
-- **Spring Cloud** (2025.1.0) - Microserviços
-- **Resilience4j** - Circuit breaker e resiliência
 
 ### Banco de Dados
 - **MySQL** - Banco de dados principal
-- **H2** - Banco de dados em memória para testes
+- **HSQLDB** - Banco de dados em memória para testes
 
 ### Ferramentas
 - **Maven** - Gerenciamento de dependências
 - **Docker & Docker Compose** - Containerização
 - **Lombok** - Redução de código boilerplate
-- **Testcontainers** - Testes de integração com containers
+
 
 ### Testes
 - **JUnit Jupiter** - Framework de testes
 - **Spring Boot Test** - Testes de integração
-- **Testcontainers** - Testes com MySQL
+- **JaCoCo** - Relatório de cobertura de testes
 
 ## ⚙️ Funcionalidades
 
@@ -54,6 +51,8 @@ Este projeto foi desenvolvido para aplicar os conceitos aprendidos durante o Boo
 - **US-0006**: Feed de novidades - Lista publicações das últimas duas semanas dos vendedores seguidos
 - **Publicação promocional**: Registra um produto em promoção exclusiva para seguidores
 - **Contar promoções**: Retorna a quantidade de produtos em promoção de um vendedor
+- **Likes**: Registra um like em uma publicação
+- **Contar likes**: Retorna a quantidade de likes em uma publicação
 
 ### 🔍 Ordenação e Filtragem
 
@@ -83,11 +82,7 @@ Este projeto foi desenvolvido para aplicar os conceitos aprendidos durante o Boo
 | has_promo | Boolean | - | Indica se está em promoção |
 | discount | Double | - | Percentual de desconto |
 
-### Categorias de Produtos
 
-- **100**: Cadeiras
-- **58**: Teclados
-- *(Adicione outras categorias conforme necessário)*
 
 ## 🐳 Docker & Containers
 
@@ -100,7 +95,7 @@ O projeto utiliza uma arquitetura multi-stage Docker com:
 ### Serviços
 
 - **MySQL**: Banco de dados na porta 3306
-- **API Runtime**: Aplicação Spring Boot na porta 5173 (mapeada para 8080 interno)
+- **API Runtime**: Aplicação Spring Boot na porta 8080 (mapeada para 8080 interno)
 
 ## 🚀 Como Executar
 
@@ -112,21 +107,14 @@ O projeto utiliza uma arquitetura multi-stage Docker com:
 
 ### Executar com Docker Compose (Recomendado)
 
-```bash
-# Clone o repositório
-git clone [url-do-repositorio]
-
-# Entre no diretório do projeto
-cd api-social-meli
-
 # Inicie os containers
-docker-compose up -d
+docker-compose up --build
 
 # Acompanhe os logs
 docker-compose logs -f runtime
 ```
 
-A aplicação estará disponível em: `http://localhost:5173`
+A aplicação estará disponível em: `http://localhost:8080`
 
 ### Executar Localmente
 
@@ -163,7 +151,7 @@ docker-compose down -v
 mvn test
 
 # Executar testes com relatório de cobertura
-mvn clean test jacoco:report
+mvn verify
 
 # Executar apenas testes unitários
 mvn test -Dtest=*UnitTest
@@ -180,10 +168,10 @@ mvn test -Dtest=*IntegrationTest
 - Mock de dependências externas
 
 #### Testes de Integração
-- Pelo menos um teste de integração por User Story
-- Uso de Testcontainers para MySQL
+- Um teste de integração por User Story
+- Uso de HSQLDB para testes
 - Testes end-to-end dos endpoints
-- **Meta de cobertura**: ≥ 80%
+- Cobertura via JaCoCo (configurada no Maven)
 
 ## 📚 Documentação da API
 
@@ -194,8 +182,29 @@ A API está completamente documentada utilizando **Swagger/OpenAPI**.
 Após iniciar a aplicação, acesse:
 
 ```
-http://localhost:5173/swagger-ui.html
+http://localhost:8080/swagger-ui/index.html
 ```
+
+```
+http://localhost:8080/swagger-ui.html
+```
+
+OpenAPI (JSON):
+
+```
+http://localhost:8080/api-docs
+```
+
+### Filtro de endpoints no Swagger
+
+O Swagger está configurado para exibir apenas endpoints dos controllers:
+
+- `springdoc.paths-to-match=/users/**,/products/**`
+- `springdoc.packages-to-scan=com.meli.social.user.impl,com.meli.social.post.impl`
+
+E para evitar que rotas geradas automaticamente por Spring Data REST apareçam na documentação:
+
+- `spring.data.rest.detection-strategy=annotated`
 
 A documentação permite:
 - Visualização de todos os endpoints disponíveis
@@ -205,11 +214,7 @@ A documentação permite:
 
 ## 🔒 Segurança
 
-O projeto implementa Spring Security para:
-- Autenticação de usuários
-- Autorização de endpoints
-- Proteção contra ataques comuns (CSRF, XSS)
-- Gestão de sessões
+Spring Security não é requisito para execução da aplicação. Caso você queira habilitar autenticação/autorização, adicione o starter e configure as regras conforme a necessidade do projeto.
 
 ## 🏗️ Arquitetura
 
@@ -218,7 +223,6 @@ O projeto implementa Spring Security para:
 - **REST API** - Arquitetura RESTful
 - **Layered Architecture** - Separação em camadas (Controller, Service, Repository)
 - **DTO Pattern** - Data Transfer Objects
-- **Circuit Breaker** - Resilience4j para resiliência
 - **Repository Pattern** - Abstração de acesso a dados
 
 ### Estrutura de Pastas
@@ -228,22 +232,32 @@ src/
 ├── main/
 │   ├── java/
 │   │   └── com/meli/social/
-│   │       ├── controller/
-│   │       ├── service/
-│   │       ├── repository/
-│   │       ├── model/
-│   │       ├── dto/
+│   │       ├── SocialApplication.java
+│   │       ├── config/
 │   │       ├── exception/
-│   │       └── config/
+│   │       ├── post/
+│   │       │   ├── dto/
+│   │       │   ├── impl/
+│   │       │   ├── inter/
+│   │       │   └── model/
+│   │       └── user/
+│   │           ├── dto/
+│   │           ├── impl/
+│   │           ├── inter/
+│   │           └── model/
 │   └── resources/
 │       ├── application.properties
-│       └── db/migration/
+│       └── data.sql
 └── test/
     ├── java/
     │   └── com/meli/social/
     │       ├── unit/
+    │       │   └── service/
     │       └── integration/
+    │           └── controller/
     └── resources/
+        ├── application-test.properties
+        └── application-test.yml
 ```
 
 ## 🌐 Variáveis de Ambiente
@@ -260,7 +274,7 @@ MYSQL_ROOT_PASSWORD: verysecret
 
 ### Configuração Local
 
-Crie um arquivo `application-local.properties`:
+No arquivo `application-local.properties`:
 
 ```properties
 spring.datasource.url=jdbc:mysql://localhost:3306/meli_social
@@ -269,86 +283,48 @@ spring.datasource.password=secret
 spring.jpa.hibernate.ddl-auto=update
 ```
 
+## 📈 Cobertura de testes (JaCoCo)
+
+O projeto possui JaCoCo configurado no `pom.xml` com escopo de cobertura restrito aos pacotes:
+
+- `com.meli.social.user.impl`
+- `com.meli.social.post.impl`
+
+Para gerar o relatório:
+
+```bash
+mvn verify
+```
+
+O relatório HTML fica em:
+
+```
+target/site/jacoco/index.html
+```
+
 ## 📈 Monitoramento e Resiliência
 
-- **Circuit Breaker**: Resilience4j configurado para proteção de falhas
 - **Health Checks**: Endpoints de saúde da aplicação
 - **Restart Policy**: `unless-stopped` para alta disponibilidade
 
 ## 🎁 Funcionalidades Bônus (Opcionais)
 
-- ✅ Testes de integração com Testcontainers
+- ✅ Testes de integração com hsqldb
 - ✅ Docker multi-stage build otimizado
-- ✅ Circuit breaker para resiliência
-- ✅ Spring Security para autenticação
 - 🎯 Cobertura de testes ≥ 80%
-- 🎯 Métricas e observabilidade
 
 ## 📝 Requisitos Técnicos
 
 - ✅ Endpoints seguem padrões REST
 - ✅ Validação de dados de entrada
 - ✅ Tratamento adequado de erros
-- ✅ Código limpo e bem documentado
-- ✅ Padrões de qualidade MercadoLibre
 - ✅ Documentação Swagger
 - ✅ Testes unitários e de integração
 
-## 🛠️ Build e Deploy
-
-### Build da Imagem Docker
-
-```bash
-# Build manual
-docker build -t api-social-meli:latest .
-
-# Build com docker-compose
-docker-compose build
-```
-
-### Gerenciamento de Containers
-
-```bash
-# Ver logs
-docker-compose logs -f runtime
-
-# Reiniciar aplicação
-docker-compose restart runtime
-
-# Verificar status
-docker-compose ps
-
-# Acessar container
-docker-compose exec runtime sh
-```
-
-## 🤝 Contribuindo
-
-### Convenções de Código
-
-- Utilizar Lombok para reduzir boilerplate
-- Seguir princípios SOLID
-- Manter cobertura de testes acima de 80%
-- Documentar endpoints no Swagger
-- Commitar com mensagens descritivas
-
-### Fluxo de Desenvolvimento
-
-1. Criar branch feature/US-XXXX
-2. Desenvolver funcionalidade
-3. Escrever testes unitários e de integração
-4. Verificar cobertura de código
-5. Criar Pull Request
-6. Code Review
-7. Merge para main
-
-## 📄 Licença
-
-Este projeto foi desenvolvido como parte do Bootcamp MercadoLibre.
 
 ## 👥 Autor
 
-**João Filho** - Desenvolvedor Bootcamp MeLi
+**João Vieira** - Desenvolvedor Bootcamp MeLi
 
 ---
 
@@ -363,4 +339,4 @@ Para dúvidas ou problemas:
 
 ### 🔄 Status do Projeto
 
-🚧 Em desenvolvimento - Bootcamp MeLi Sprint
+✅ Concluído

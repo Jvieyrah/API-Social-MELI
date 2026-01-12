@@ -26,4 +26,14 @@ public class PostRepository  implements IPostRepository {
         return postJpaRepository.findByUser_UserIdInAndDateBetween(userIds, startDate, endDate, sort);
     }
 
+    @Override
+    public long countPromoPostsByUserId(Integer userId) {
+        return postJpaRepository.countByUser_UserIdAndHasPromoTrue(userId);
+    }
+
+    @Override
+    public List<Post> findPromoPostsByUserId(Integer userId) {
+        return postJpaRepository.findByUser_UserIdAndHasPromoTrue(userId);
+    }
+
 }

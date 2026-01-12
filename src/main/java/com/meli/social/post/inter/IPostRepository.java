@@ -12,4 +12,8 @@ public interface IPostRepository {
 
     List<Post> findPostsByUserIdInAndDateBetween(List<Integer> userIds, LocalDate startDate, LocalDate endDate, Sort sort);
 
+    long countPromoPostsByUserId(Integer userId);
+
+    List<Post> findPromoPostsByUserId(Integer userId);
+
 }

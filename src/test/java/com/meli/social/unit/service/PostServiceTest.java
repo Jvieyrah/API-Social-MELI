@@ -3,6 +3,9 @@ package com.meli.social.unit.service;
 import com.meli.social.exception.UserNotFoundException;
 import com.meli.social.post.dto.FollowedPostsDTO;
 import com.meli.social.post.dto.PostDTO;
+import com.meli.social.post.dto.PostPromoDTO;
+import com.meli.social.post.dto.PromoProducsListDTO;
+import com.meli.social.post.dto.PromoProductsCountDTO;
 import com.meli.social.post.dto.ProductDTO;
 import com.meli.social.post.impl.PostService;
 import com.meli.social.post.inter.IProductRepository;
@@ -336,6 +339,114 @@ class PostServiceTest {
         verify(userRepository, times(1)).existsById(999);
         verify(userRepository, times(1)).findFollowingIdsByUserId(999);
         verify(postRepository, never()).findPostsByUserIdInAndDateBetween(anyList(), any(), any(), any());
+    }
+
+    @Test
+    @DisplayName("Deve retornar PromoProductsCountDTO com userId, userName e promoProductsCount")
+    void testGetPromoProductsCount_Success() {
+        Integer userId = 1;
+        long promoCount = 7L;
+
+        User user = new User();
+        user.setUserId(userId);
+        user.setUserName("testUser");
+
+        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+        when(postRepository.countPromoPostsByUserId(userId)).thenReturn(promoCount);
+
+        PromoProductsCountDTO result = postService.getPromoProductsCount(userId);
+
+        assertNotNull(result);
+        assertEquals(userId, result.getUserId());
+        assertEquals("testUser", result.getUserName());
+        assertEquals(promoCount, result.getPromoProductsCount());
+
+        verify(userRepository, times(1)).findById(userId);
+        verify(postRepository, times(1)).countPromoPostsByUserId(userId);
+    }
+
+    @Test
+    @DisplayName("Deve lançar UserNotFoundException ao buscar promo products count de usuário inexistente")
+    void testGetPromoProductsCount_UserNotFound() {
+        Integer userId = 999;
+
+        when(userRepository.findById(userId)).thenReturn(Optional.empty());
+
+        UserNotFoundException exception = assertThrows(
+                UserNotFoundException.class,
+                () -> postService.getPromoProductsCount(userId)
+        );
+
+        assertEquals("Usuário não encontrado: " + userId, exception.getMessage());
+        verify(userRepository, times(1)).findById(userId);
+        verify(postRepository, never()).countPromoPostsByUserId(any());
+        verifyNoInteractions(productRepository);
+    }
+
+    @Test
+    @DisplayName("Deve retornar PromoProducsListDTO com posts promocionais mapeados")
+    void testGetPromoProductsList_Success() {
+        Integer userId = 1;
+
+        User user = new User();
+        user.setUserId(userId);
+        user.setUserName("testUser");
+
+        Product product = new Product(10, "Product 10", "Type", "Brand", "Color", "Notes");
+
+        Post p1 = new Post();
+        p1.setPostId(100);
+        p1.setUser(user);
+        p1.setDate(LocalDate.of(2026, 1, 1));
+        p1.setProduct(product);
+        p1.setCategory(1);
+        p1.setPrice(99.99);
+        p1.setHasPromo(true);
+        p1.setDiscount(0.10);
+
+        List<Post> posts = List.of(p1);
+
+        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+        when(postRepository.findPromoPostsByUserId(userId)).thenReturn(posts);
+
+        PromoProducsListDTO result = postService.getPromoProductsList(userId);
+
+        assertNotNull(result);
+        assertEquals(userId, result.getUserId());
+        assertEquals("testUser", result.getUserName());
+        assertNotNull(result.getPosts());
+        assertEquals(1, result.getPosts().size());
+
+        PostPromoDTO dto = result.getPosts().get(0);
+        assertEquals(userId, dto.getUserId());
+        assertEquals("2026-01-01", dto.getDate());
+        assertNotNull(dto.getProduct());
+        assertEquals(10, dto.getProduct().getProductId());
+        assertEquals(1, dto.getCategory());
+        assertEquals(99.99, dto.getPrice());
+        assertTrue(dto.getHasPromo());
+        assertEquals(0.10, dto.getDiscount());
+
+        verify(userRepository, times(1)).findById(userId);
+        verify(postRepository, times(1)).findPromoPostsByUserId(userId);
+    }
+
+    @Test
+    @DisplayName("Deve lançar UserNotFoundException ao buscar promo products list de usuário inexistente")
+    void testGetPromoProductsList_UserNotFound() {
+        Integer userId = 999;
+
+        when(userRepository.findById(userId)).thenReturn(Optional.empty());
+
+        UserNotFoundException exception = assertThrows(
+                UserNotFoundException.class,
+                () -> postService.getPromoProductsList(userId)
+        );
+
+        assertEquals("Usuário não encontrado: " + userId, exception.getMessage());
+        verify(userRepository, times(1)).findById(userId);
+        verify(postRepository, never()).findPromoPostsByUserId(any());
+        verifyNoInteractions(productRepository);
     }
 
 }

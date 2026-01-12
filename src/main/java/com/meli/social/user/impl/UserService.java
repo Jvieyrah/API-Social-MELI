@@ -2,6 +2,7 @@ package com.meli.social.user.impl;
 
 import com.meli.social.user.dto.UserDTO;
 import com.meli.social.user.dto.UserSimpleDTO;
+import com.meli.social.user.dto.UserWithFollowedDTO;
 import com.meli.social.user.dto.UserWithFollowersDTO;
 import com.meli.social.user.inter.IUserService;
 import com.meli.social.user.inter.UserJpaRepository;
@@ -179,7 +180,7 @@ public class UserService implements IUserService {
 
 
     @Override
-    public UserWithFollowersDTO getFollowing(Integer userId,String order) {
+    public UserWithFollowedDTO getFollowing(Integer userId,String order) {
         User mainUser = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado: " + userId));
 
@@ -197,7 +198,7 @@ public class UserService implements IUserService {
                 .map(user -> new UserSimpleDTO(user.getUserId(), user.getUserName())) // <- estudar a implementacao de uma classe mapper aqui.
                 .toList();
 
-        return UserWithFollowersDTO.withFollowed(mainUser, followingDTD);
+        return UserWithFollowedDTO.withFollowed(mainUser, followingDTD);
     }
 
 

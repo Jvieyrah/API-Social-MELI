@@ -3,6 +3,9 @@ package com.meli.social.post.impl;
 import com.meli.social.exception.UserNotFoundException;
 import com.meli.social.post.dto.FollowedPostsDTO;
 import com.meli.social.post.dto.PostDTO;
+import com.meli.social.post.dto.PostPromoDTO;
+import com.meli.social.post.dto.PromoProducsListDTO;
+import com.meli.social.post.dto.PromoProductsCountDTO;
 import com.meli.social.post.inter.IProductRepository;
 import com.meli.social.post.inter.IPostRepository;
 import com.meli.social.post.inter.IPostService;
@@ -42,8 +45,7 @@ public class PostService implements IPostService {
             throw new IllegalArgumentException("UserId não pode ser nulo");
         }
 
-        User user = userRepository.findById(newPost.getUserId())
-                .orElseThrow(() -> new UserNotFoundException("Usuário não encontrado: " + newPost.getUserId()));
+        User user = getUserOrThrow(newPost.getUserId());
 
         Post post = newPost.toEntity(user, resolveDate(newPost.getDate()));
 
@@ -73,6 +75,30 @@ public class PostService implements IPostService {
                 : sort.equalsIgnoreCase("date_asc") ? Sort.by("date").ascending() : Sort.by("date").descending();
         List<Post> posts = postRepository.findPostsByUserIdInAndDateBetween(userFollows, startDate, endDate, sortSpec);
         return new FollowedPostsDTO(userId, posts);
+    }
+
+    @Override
+    public PromoProductsCountDTO getPromoProductsCount(Integer userId) {
+        User user = getUserOrThrow(userId);
+
+        long count = postRepository.countPromoPostsByUserId(userId);
+        return new PromoProductsCountDTO(user.getUserId(), user.getUserName(), count);
+    }
+
+    @Override
+    public PromoProducsListDTO getPromoProductsList(Integer userId) {
+        User user = getUserOrThrow(userId);
+
+        List<Post> posts = postRepository.findPromoPostsByUserId(userId);
+        List<PostPromoDTO> promoPostTreated = posts.stream()
+                .map(PostPromoDTO::fromEntity)
+                .collect(Collectors.toList());
+        return new PromoProducsListDTO(user.getUserId(), user.getUserName(), promoPostTreated);
+    }
+
+    private User getUserOrThrow(Integer userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("Usuário não encontrado: " + userId));
     }
 
     private Product resolveProduct(Product product) {

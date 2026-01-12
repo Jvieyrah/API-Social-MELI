@@ -1,7 +1,6 @@
 package com.meli.social.post.impl;
 
-import com.meli.social.post.dto.FollowedPostsDTO;
-import com.meli.social.post.dto.PostDTO;
+import com.meli.social.post.dto.*;
 import com.meli.social.post.inter.IPostService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -22,11 +21,29 @@ public class PostController {
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
+    @PostMapping("/promo-pub")
+    public ResponseEntity<Void> publishPromo(@Valid @RequestBody PostPromoDTO postPromoDTO) {
+        postService.createPost(postPromoDTO);
+        return ResponseEntity.status(HttpStatus.CREATED).build();
+    }
+
     @GetMapping("/followed/{userId}/list")
     public ResponseEntity<FollowedPostsDTO> getFeed(
             @PathVariable Integer userId,
             @RequestParam(required = false) String order) {
         return ResponseEntity.ok(postService.getFollowedPosts(userId, order));
+    }
+
+    @GetMapping("/promo-pub/count")
+    public ResponseEntity<PromoProductsCountDTO> getPromoProductsCount(
+            @RequestParam Integer userId) {
+        return ResponseEntity.ok(postService.getPromoProductsCount(userId));
+    }
+
+    @GetMapping("/promo-pub/list")
+    public ResponseEntity<PromoProducsListDTO> getPromoProductsList(
+            @RequestParam Integer userId) {
+        return ResponseEntity.ok(postService.getPromoProductsList(userId));
     }
 
 }

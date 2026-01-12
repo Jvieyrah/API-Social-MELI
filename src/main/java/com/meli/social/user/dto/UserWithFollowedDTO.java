@@ -14,16 +14,16 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true) // Manter metodos Lombok para herança
-@JsonPropertyOrder({"userId", "userName", "followers"})
-public class UserWithFollowersDTO extends UserSimpleDTO {
+@JsonPropertyOrder({"userId", "userName", "followed"})
+public class UserWithFollowedDTO extends UserSimpleDTO {
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    private List<UserSimpleDTO> followers;
+    private List<UserSimpleDTO> followed;
 
-    public static UserWithFollowersDTO withFollowers(User user, List<UserSimpleDTO> followers) {
-        UserWithFollowersDTO dto = new UserWithFollowersDTO();
+    public static UserWithFollowedDTO withFollowed(User user, List<UserSimpleDTO> followed) {
+        UserWithFollowedDTO dto = new UserWithFollowedDTO();
         dto.setUserId(user.getUserId());
         dto.setUserName(user.getUserName());
-        dto.setFollowers(followers);
+        dto.setFollowed(followed);
         return dto;
     }
 }

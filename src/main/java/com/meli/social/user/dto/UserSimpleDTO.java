@@ -27,4 +27,5 @@ public class UserSimpleDTO {
     public static UserSimpleDTO fromUserWithFollowers(User user) {
         return new UserSimpleDTO(user.getUserId(), user.getUserName(), user.getFollowersCount());
     }
+
 }

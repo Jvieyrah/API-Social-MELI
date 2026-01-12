@@ -9,4 +9,8 @@ import java.util.List;
 public interface PostJpaRepository  extends JpaRepository<Post, Integer> {
 
     List<Post> findByUser_UserIdInAndDateBetween(List<Integer> userIds, LocalDate startDate, LocalDate endDate, Sort sort);
+
+    long countByUser_UserIdAndHasPromoTrue(Integer userId);
+
+    List<Post> findByUser_UserIdAndHasPromoTrue(Integer userId);
 }

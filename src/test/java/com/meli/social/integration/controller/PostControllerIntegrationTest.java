@@ -87,6 +87,189 @@ class PostControllerIntegrationTest {
     }
 
     @Test
+    @DisplayName("Deve publicar um post promocional com sucesso e persistir hasPromo e discount")
+    void shouldPublishPromoPostSuccessfully() {
+        User user = userRepository.saveAndFlush(new User("usertest"));
+
+        Map<String, Object> product = new HashMap<>();
+        product.put("productId", 1001);
+        product.put("productName", "Mouse Gamer");
+        product.put("type", "Periférico");
+        product.put("brand", "Logitech");
+        product.put("color", "Preto");
+        product.put("notes", "Teste");
+
+        Map<String, Object> request = new HashMap<>();
+        request.put("userId", user.getUserId());
+        request.put("date", null);
+        request.put("product", product);
+        request.put("category", 58);
+        request.put("price", 299.90);
+        request.put("has_promo", true);
+        request.put("discount", 0.25);
+
+        given()
+                .contentType(ContentType.JSON)
+                .body(request)
+                .when()
+                .post("/promo-pub")
+                .then()
+                .statusCode(201)
+                .body(is(emptyOrNullString()));
+
+        assertThat(postRepository.count()).isEqualTo(1);
+        Post savedPost = postRepository.findAll().get(0);
+        assertThat(savedPost.getHasPromo()).isTrue();
+        assertThat(savedPost.getDiscount()).isEqualTo(0.25);
+    }
+
+    @Test
+    @DisplayName("Deve retornar a quantidade de produtos em promoção para um vendedor")
+    void shouldReturnPromoProductsCountSuccessfully() {
+        User user = userRepository.saveAndFlush(new User("vendedor1"));
+
+        Product product1 = productRepository.saveAndFlush(new Product(5001, "Product 1", "Type 1", "Brand 1", "Color 1", "Notes 1"));
+        Product product2 = productRepository.saveAndFlush(new Product(5002, "Product 2", "Type 2", "Brand 2", "Color 2", "Notes 2"));
+        Product product3 = productRepository.saveAndFlush(new Product(5003, "Product 3", "Type 3", "Brand 3", "Color 3", "Notes 3"));
+
+        Post promo1 = new Post();
+        promo1.setUser(user);
+        promo1.setDate(LocalDate.now());
+        promo1.setProduct(product1);
+        promo1.setCategory(1);
+        promo1.setPrice(10.0);
+        promo1.setHasPromo(true);
+        promo1.setDiscount(0.10);
+        promo1.setLikesCount(0);
+
+        Post promo2 = new Post();
+        promo2.setUser(user);
+        promo2.setDate(LocalDate.now());
+        promo2.setProduct(product2);
+        promo2.setCategory(1);
+        promo2.setPrice(20.0);
+        promo2.setHasPromo(true);
+        promo2.setDiscount(0.20);
+        promo2.setLikesCount(0);
+
+        Post normal = new Post();
+        normal.setUser(user);
+        normal.setDate(LocalDate.now());
+        normal.setProduct(product3);
+        normal.setCategory(1);
+        normal.setPrice(30.0);
+        normal.setHasPromo(false);
+        normal.setDiscount(null);
+        normal.setLikesCount(0);
+
+        postRepository.save(promo1);
+        postRepository.save(promo2);
+        postRepository.save(normal);
+
+        given()
+                .when()
+                .get("/promo-pub/count?userId={userId}", user.getUserId())
+                .then()
+                .statusCode(200)
+                .contentType(ContentType.JSON)
+                .body("userId", is(user.getUserId()))
+                .body("userName", is("vendedor1"))
+                .body("promoProductsCount", is(2));
+    }
+
+    @Test
+    @DisplayName("Deve retornar 404 ao buscar promo products count de usuário inexistente")
+    void shouldReturn404WhenGetPromoProductsCountUserDoesNotExist() {
+        Integer userId = 99999;
+
+        given()
+                .when()
+                .get("/promo-pub/count?userId={userId}", userId)
+                .then()
+                .statusCode(404)
+                .contentType(ContentType.JSON)
+                .body("status", equalTo(404))
+                .body("error", equalTo("Not Found"))
+                .body("message", equalTo("Usuário não encontrado: " + userId))
+                .body("timestamp", notNullValue());
+    }
+
+    @Test
+    @DisplayName("Deve retornar a lista de produtos em promoção para um vendedor")
+    void shouldReturnPromoProductsListSuccessfully() {
+        User user = userRepository.saveAndFlush(new User("vendedor1"));
+
+        Product product1 = productRepository.saveAndFlush(new Product(6001, "Product 1", "Type 1", "Brand 1", "Color 1", "Notes 1"));
+        Product product2 = productRepository.saveAndFlush(new Product(6002, "Product 2", "Type 2", "Brand 2", "Color 2", "Notes 2"));
+        Product product3 = productRepository.saveAndFlush(new Product(6003, "Product 3", "Type 3", "Brand 3", "Color 3", "Notes 3"));
+
+        Post promo1 = new Post();
+        promo1.setUser(user);
+        promo1.setDate(LocalDate.of(2026, 1, 1));
+        promo1.setProduct(product1);
+        promo1.setCategory(1);
+        promo1.setPrice(10.0);
+        promo1.setHasPromo(true);
+        promo1.setDiscount(0.10);
+        promo1.setLikesCount(0);
+
+        Post promo2 = new Post();
+        promo2.setUser(user);
+        promo2.setDate(LocalDate.of(2026, 1, 2));
+        promo2.setProduct(product2);
+        promo2.setCategory(1);
+        promo2.setPrice(20.0);
+        promo2.setHasPromo(true);
+        promo2.setDiscount(0.20);
+        promo2.setLikesCount(0);
+
+        Post normal = new Post();
+        normal.setUser(user);
+        normal.setDate(LocalDate.of(2026, 1, 3));
+        normal.setProduct(product3);
+        normal.setCategory(1);
+        normal.setPrice(30.0);
+        normal.setHasPromo(false);
+        normal.setDiscount(null);
+        normal.setLikesCount(0);
+
+        postRepository.save(promo1);
+        postRepository.save(promo2);
+        postRepository.save(normal);
+
+        given()
+                .when()
+                .get("/promo-pub/list?userId={userId}", user.getUserId())
+                .then()
+                .statusCode(200)
+                .contentType(ContentType.JSON)
+                .body("userId", is(user.getUserId()))
+                .body("userName", is("vendedor1"))
+                .body("posts", hasSize(2))
+                .body("posts.userId", everyItem(is(user.getUserId())))
+                .body("posts.hasPromo", everyItem(is(true)))
+                .body("posts.discount", containsInAnyOrder(0.10F, 0.20F))
+                .body("posts.date", containsInAnyOrder("2026-01-01", "2026-01-02"));
+    }
+
+    @Test
+    @DisplayName("Deve retornar 404 ao buscar promo products list de usuário inexistente")
+    void shouldReturn404WhenGetPromoProductsListUserDoesNotExist() {
+        Integer userId = 99999;
+
+        given()
+                .when()
+                .get("/promo-pub/list?userId={userId}", userId)
+                .then()
+                .statusCode(404)
+                .contentType(ContentType.JSON)
+                .body("status", equalTo(404))
+                .body("error", equalTo("Not Found"))
+                .body("message", equalTo("Usuário não encontrado: " + userId))
+                .body("timestamp", notNullValue());
+    }
+
+    @Test
     @DisplayName("Deve publicar um post com sucesso de um produto que já existe com data informada valida")
     void shouldPublishPostSuccessfully_whenProduct_alreadyExists(){
         Product productToSave = new Product(1001, "Mouse Gamer", "Periférico", "Logitech", "Preto", "Teste");

@@ -134,7 +134,7 @@ class UserControllerIntegrationTest {
 
         given()
                 .when()
-                .get("/{userId}/following/list", userA.getUserId())
+                .get("/{userId}/followed/list", userA.getUserId())
                 .then()
                 .statusCode(200)
                 .contentType(ContentType.JSON)
@@ -157,7 +157,7 @@ class UserControllerIntegrationTest {
 
         given()
                 .when()
-                .get("/{userId}/following/list?order=name_asc", userA.getUserId())
+                .get("/{userId}/followed/list?order=name_asc", userA.getUserId())
                 .then()
                 .statusCode(200)
                 .contentType(ContentType.JSON)
@@ -180,7 +180,7 @@ class UserControllerIntegrationTest {
 
         given()
                 .when()
-                .get("/{userId}/following/list?order=name_desc", userA.getUserId())
+                .get("/{userId}/followed/list?order=name_desc", userA.getUserId())
                 .then()
                 .statusCode(200)
                 .contentType(ContentType.JSON)
@@ -205,7 +205,7 @@ class UserControllerIntegrationTest {
 
         given()
                 .when()
-                .get("/{userId}/following/list?order=" + invalidOrder, userA.getUserId())
+                .get("/{userId}/followed/list?order=" + invalidOrder, userA.getUserId())
                 .then()
                 .statusCode(400)
                 .contentType(ContentType.JSON)
@@ -220,7 +220,7 @@ class UserControllerIntegrationTest {
     void shouldReturn400WhenGetFollowingUserDoesNotExist() {
         given()
                 .when()
-                .get("/{userId}/following/list", 99999)
+                .get("/{userId}/followed/list", 99999)
                 .then()
                 .statusCode(400)
                 .contentType(ContentType.JSON)

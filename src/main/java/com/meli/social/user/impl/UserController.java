@@ -2,6 +2,7 @@ package com.meli.social.user.impl;
 
 import com.meli.social.user.dto.UserDTO;
 import com.meli.social.user.dto.UserSimpleDTO;
+import com.meli.social.user.dto.UserWithFollowedDTO;
 import com.meli.social.user.dto.UserWithFollowersDTO;
 import com.meli.social.user.inter.IFollowService;
 import com.meli.social.user.inter.IUserService;
@@ -75,8 +76,8 @@ public class UserController {
         return ResponseEntity.ok(followService.returnUserWithFollowerCounter(userId));
     }
 
-    @GetMapping("/{userId}/following/list")
-    public ResponseEntity<UserWithFollowersDTO> getFollowing(
+    @GetMapping("/{userId}/followed/list")
+    public ResponseEntity<UserWithFollowedDTO> getFollowing(
             @PathVariable Integer userId,
             @RequestParam(required = false) String order) {
         return ResponseEntity.ok(userService.getFollowing(userId, order));

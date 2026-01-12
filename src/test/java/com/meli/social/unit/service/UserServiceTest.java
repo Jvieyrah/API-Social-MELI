@@ -1,6 +1,7 @@
 package com.meli.social.unit.service;
 
 import com.meli.social.user.dto.UserSimpleDTO;
+import com.meli.social.user.dto.UserWithFollowedDTO;
 import com.meli.social.user.dto.UserWithFollowersDTO;
 import com.meli.social.user.model.User;
 import com.meli.social.user.impl.UserService;
@@ -300,7 +301,7 @@ void testGetFollowingSuccess() {
     when(userRepository.findFollowingByUserId(userId)).thenReturn(List.of(following1, following2));
 
     // Act
-    UserWithFollowersDTO result = userService.getFollowing(userId, null);
+    UserWithFollowedDTO result = userService.getFollowing(userId, null);
 
     // Assert
     assertNotNull(result);
@@ -344,7 +345,7 @@ void testGetFollowingSuccess() {
         when(userRepository.findFollowingByUserIdOrderByNameAsc(userId))
                 .thenReturn(List.of(following1, following2, following3));
 
-        UserWithFollowersDTO result = userService.getFollowing(userId, "name_asc");
+        UserWithFollowedDTO result = userService.getFollowing(userId, "name_asc");
 
         assertNotNull(result);
         assertEquals(userId, result.getUserId());
@@ -388,7 +389,7 @@ void testGetFollowingSuccess() {
         when(userRepository.findFollowingByUserIdOrderByNameDesc(userId))
                 .thenReturn(List.of(following1, following2, following3));
 
-        UserWithFollowersDTO result = userService.getFollowing(userId, "name_desc");
+        UserWithFollowedDTO result = userService.getFollowing(userId, "name_desc");
 
         assertNotNull(result);
         assertEquals(userId, result.getUserId());

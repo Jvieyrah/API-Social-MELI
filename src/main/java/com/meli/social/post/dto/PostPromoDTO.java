@@ -1,8 +1,6 @@
 package com.meli.social.post.dto;
 
 import com.fasterxml.jackson.annotation.JsonAlias;
-import com.fasterxml.jackson.databind.PropertyNamingStrategies;
-import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.meli.social.post.model.Post;
 import com.meli.social.user.model.User;
 import lombok.AllArgsConstructor;
@@ -16,7 +14,6 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true) // Manter metodos Lombok para herança
-@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class PostPromoDTO extends PostDTO {
 
     @JsonAlias({"hasPromo", "has_promo"})
@@ -39,6 +36,7 @@ public class PostPromoDTO extends PostDTO {
         }
 
         PostPromoDTO dto = new PostPromoDTO();
+        dto.setPostId(post.getPostId());
         dto.setUserId(post.getUser() != null ? post.getUser().getUserId() : null);
         dto.setDate(post.getDate() != null ? post.getDate().toString() : null);
         dto.setProduct(ProductDTO.fromEntity(post.getProduct()));

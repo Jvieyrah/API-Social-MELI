@@ -1,5 +1,7 @@
 package com.meli.social.exception;
 
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
@@ -44,6 +46,23 @@ public class GlobalExceptionHandler {
         body.put("status", HttpStatus.BAD_REQUEST.value());
         body.put("error", "Bad Request");
         body.put("message", ex.getMessage());
+
+        return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<Map<String, Object>> handleConstraintViolationException(ConstraintViolationException ex) {
+        String message = "Dados inválidos";
+        ConstraintViolation<?> violation = ex.getConstraintViolations().stream().findFirst().orElse(null);
+        if (violation != null) {
+            message = violation.getPropertyPath() + ": " + violation.getMessage();
+        }
+
+        Map<String, Object> body = new LinkedHashMap<>();
+        body.put("timestamp", LocalDateTime.now());
+        body.put("status", HttpStatus.BAD_REQUEST.value());
+        body.put("error", "Bad Request");
+        body.put("message", message);
 
         return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
     }

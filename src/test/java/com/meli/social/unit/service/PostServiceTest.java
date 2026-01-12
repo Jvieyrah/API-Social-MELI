@@ -1,5 +1,6 @@
 package com.meli.social.unit.service;
 
+import com.meli.social.exception.PostNotFoundException;
 import com.meli.social.exception.UserNotFoundException;
 import com.meli.social.post.dto.FollowedPostsDTO;
 import com.meli.social.post.dto.PostDTO;
@@ -10,6 +11,7 @@ import com.meli.social.post.dto.ProductDTO;
 import com.meli.social.post.impl.PostService;
 import com.meli.social.post.inter.IProductRepository;
 import com.meli.social.post.inter.IPostRepository;
+import com.meli.social.post.inter.PostLikeJpaRepository;
 import com.meli.social.post.model.Post;
 import com.meli.social.post.model.Product;
 import com.meli.social.user.inter.UserJpaRepository;
@@ -46,12 +48,15 @@ class PostServiceTest {
     @Mock
     private UserJpaRepository userRepository;
 
+    @Mock
+    private PostLikeJpaRepository postLikeRepository;
+
     @InjectMocks
     private PostService postService;
 
     @BeforeEach
     void setUp() {
-        reset(postRepository, productRepository, userRepository);
+        reset(postRepository, productRepository, userRepository, postLikeRepository);
     }
 
     @Test
@@ -447,6 +452,159 @@ class PostServiceTest {
         verify(userRepository, times(1)).findById(userId);
         verify(postRepository, never()).findPromoPostsByUserId(any());
         verifyNoInteractions(productRepository);
+    }
+
+    @Test
+    @DisplayName("Deve curtir um post com sucesso e incrementar likesCount")
+    void testLikePost_Success() {
+        Integer userId = 1;
+        Integer postId = 10;
+
+        User user = new User();
+        user.setUserId(userId);
+        user.setUserName("testUser");
+
+        Post post = new Post();
+        post.setPostId(postId);
+        post.setUser(user);
+        post.setDate(LocalDate.of(2026, 1, 1));
+        post.setCategory(1);
+        post.setPrice(10.0);
+        post.setLikesCount(0);
+
+        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+        when(postRepository.findById(postId)).thenReturn(Optional.of(post));
+        when(postLikeRepository.existsByUser_UserIdAndPost_PostId(userId, postId)).thenReturn(false);
+        when(postRepository.save(any(Post.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        assertDoesNotThrow(() -> postService.likePost(postId, userId));
+
+        var postCaptor = org.mockito.ArgumentCaptor.forClass(Post.class);
+        verify(postRepository).save(postCaptor.capture());
+        Post saved = postCaptor.getValue();
+
+        assertEquals(1, saved.getLikesCount());
+        assertNotNull(saved.getLikes());
+        assertEquals(1, saved.getLikes().size());
+
+        verify(userRepository, times(1)).findById(userId);
+        verify(postRepository, times(1)).findById(postId);
+        verify(postLikeRepository, times(1)).existsByUser_UserIdAndPost_PostId(userId, postId);
+    }
+
+    @Test
+    @DisplayName("Deve lançar exceção ao curtir um post já curtido")
+    void testLikePost_AlreadyLiked_ShouldThrow() {
+        Integer userId = 1;
+        Integer postId = 10;
+
+        User user = new User();
+        user.setUserId(userId);
+        user.setUserName("testUser");
+
+        Post post = new Post();
+        post.setPostId(postId);
+        post.setUser(user);
+        post.setDate(LocalDate.of(2026, 1, 1));
+        post.setCategory(1);
+        post.setPrice(10.0);
+
+        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+        when(postRepository.findById(postId)).thenReturn(Optional.of(post));
+        when(postLikeRepository.existsByUser_UserIdAndPost_PostId(userId, postId)).thenReturn(true);
+
+        IllegalArgumentException ex = assertThrows(
+                IllegalArgumentException.class,
+                () -> postService.likePost(postId, userId)
+        );
+
+        assertEquals("Usuário %d já curtiu o post %d".formatted(userId, postId), ex.getMessage());
+        verify(postRepository, never()).save(any(Post.class));
+    }
+
+    @Test
+    @DisplayName("Deve remover curtida com sucesso e decrementar likesCount")
+    void testUnlikePost_Success() {
+        Integer userId = 1;
+        Integer postId = 10;
+
+        User user = new User();
+        user.setUserId(userId);
+        user.setUserName("testUser");
+
+        Post post = new Post();
+        post.setPostId(postId);
+        post.setUser(user);
+        post.setDate(LocalDate.of(2026, 1, 1));
+        post.setCategory(1);
+        post.setPrice(10.0);
+        post.setLikesCount(1);
+
+        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+        when(postRepository.findById(postId)).thenReturn(Optional.of(post));
+        when(postLikeRepository.deleteByUser_UserIdAndPost_PostId(userId, postId)).thenReturn(1L);
+        when(postRepository.save(any(Post.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        assertDoesNotThrow(() -> postService.unlikePost(postId, userId));
+
+        var postCaptor = org.mockito.ArgumentCaptor.forClass(Post.class);
+        verify(postRepository).save(postCaptor.capture());
+        Post saved = postCaptor.getValue();
+        assertEquals(0, saved.getLikesCount());
+
+        verify(postLikeRepository, times(1)).deleteByUser_UserIdAndPost_PostId(userId, postId);
+    }
+
+    @Test
+    @DisplayName("Deve lançar exceção ao remover curtida inexistente")
+    void testUnlikePost_NotLiked_ShouldThrow() {
+        Integer userId = 1;
+        Integer postId = 10;
+
+        User user = new User();
+        user.setUserId(userId);
+        user.setUserName("testUser");
+
+        Post post = new Post();
+        post.setPostId(postId);
+        post.setUser(user);
+        post.setDate(LocalDate.of(2026, 1, 1));
+        post.setCategory(1);
+        post.setPrice(10.0);
+
+        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+        when(postRepository.findById(postId)).thenReturn(Optional.of(post));
+        when(postLikeRepository.deleteByUser_UserIdAndPost_PostId(userId, postId)).thenReturn(0L);
+
+        IllegalArgumentException ex = assertThrows(
+                IllegalArgumentException.class,
+                () -> postService.unlikePost(postId, userId)
+        );
+
+        assertEquals("Usuário %d não curtiu o post %d".formatted(userId, postId), ex.getMessage());
+        verify(postRepository, never()).save(any(Post.class));
+    }
+
+    @Test
+    @DisplayName("Deve lançar PostNotFoundException ao curtir post inexistente")
+    void testLikePost_PostNotFound_ShouldThrow() {
+        Integer userId = 1;
+        Integer postId = 999;
+
+        User user = new User();
+        user.setUserId(userId);
+        user.setUserName("testUser");
+
+        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+        when(postRepository.findById(postId)).thenReturn(Optional.empty());
+
+        PostNotFoundException ex = assertThrows(
+                PostNotFoundException.class,
+                () -> postService.likePost(postId, userId)
+        );
+
+        assertEquals("Post não encontrado: " + postId, ex.getMessage());
+        verify(postRepository, never()).save(any(Post.class));
     }
 
 }

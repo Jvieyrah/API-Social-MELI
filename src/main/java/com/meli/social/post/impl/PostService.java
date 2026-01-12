@@ -1,5 +1,6 @@
 package com.meli.social.post.impl;
 
+import com.meli.social.exception.PostNotFoundException;
 import com.meli.social.exception.UserNotFoundException;
 import com.meli.social.post.dto.FollowedPostsDTO;
 import com.meli.social.post.dto.PostDTO;
@@ -7,9 +8,11 @@ import com.meli.social.post.dto.PostPromoDTO;
 import com.meli.social.post.dto.PromoProducsListDTO;
 import com.meli.social.post.dto.PromoProductsCountDTO;
 import com.meli.social.post.inter.IProductRepository;
+import com.meli.social.post.inter.PostLikeJpaRepository;
 import com.meli.social.post.inter.IPostRepository;
 import com.meli.social.post.inter.IPostService;
 import com.meli.social.post.model.Post;
+import com.meli.social.post.model.PostLike;
 import com.meli.social.post.model.Product;
 import com.meli.social.user.inter.UserJpaRepository;
 import com.meli.social.user.model.User;
@@ -34,6 +37,7 @@ public class PostService implements IPostService {
     private final IPostRepository postRepository;
     private final IProductRepository productRepository;
     private final UserJpaRepository userRepository;
+    private final PostLikeJpaRepository postLikeRepository;
 
     @Override
     @Transactional
@@ -94,6 +98,61 @@ public class PostService implements IPostService {
                 .map(PostPromoDTO::fromEntity)
                 .collect(Collectors.toList());
         return new PromoProducsListDTO(user.getUserId(), user.getUserName(), promoPostTreated);
+    }
+
+    @Override
+    @Transactional
+    public void likePost(Integer postId, Integer userId) {
+        validateNotNullOrThrow(postId, userId);
+
+        User user = getUserOrThrow(userId);
+
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new PostNotFoundException("Post não encontrado: " + postId));
+
+        if (postLikeRepository.existsByUser_UserIdAndPost_PostId(userId, postId)) {
+            throw new IllegalArgumentException(
+                    "Usuário %d já curtiu o post %d".formatted(userId, postId)
+            );
+        }
+
+        PostLike like = new PostLike();
+        like.setUser(user);
+        like.setPost(post);
+
+        post.getLikes().add(like);
+        post.setLikesCount((post.getLikesCount() == null ? 0 : post.getLikesCount()) + 1);
+
+        postRepository.save(post);
+    }
+
+    @Override
+    @Transactional
+    public void unlikePost(Integer postId, Integer userId) {
+        validateNotNullOrThrow(postId, userId);
+
+        getUserOrThrow(userId);
+
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new PostNotFoundException("Post não encontrado: " + postId));
+
+        long deleted = postLikeRepository.deleteByUser_UserIdAndPost_PostId(userId, postId);
+        if (deleted == 0) {
+            throw new IllegalArgumentException(
+                    "Usuário %d não curtiu o post %d".formatted(userId, postId)
+            );
+        }
+
+        post.getLikes().removeIf(like -> like.getUser() != null && userId.equals(like.getUser().getUserId()));
+        post.setLikesCount(Math.max(0, (post.getLikesCount() == null ? 0 : post.getLikesCount()) - 1));
+
+        postRepository.save(post);
+    }
+
+    private static void validateNotNullOrThrow(Integer postId, Integer userId) {
+        if (postId == null || userId == null) {
+            throw new IllegalArgumentException("IDs não podem ser nulos");
+        }
     }
 
     private User getUserOrThrow(Integer userId) {

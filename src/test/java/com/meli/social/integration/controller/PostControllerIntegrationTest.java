@@ -1,6 +1,7 @@
 package com.meli.social.integration.controller;
 
 import com.meli.social.post.inter.PostJpaRepository;
+import com.meli.social.post.inter.PostLikeJpaRepository;
 import com.meli.social.post.inter.ProductJpaRepository;
 import com.meli.social.post.model.Post;
 import com.meli.social.post.model.Product;
@@ -41,6 +42,9 @@ class PostControllerIntegrationTest {
     @Autowired
     private ProductJpaRepository productRepository;
 
+    @Autowired
+    private PostLikeJpaRepository postLikeRepository;
+
     @BeforeEach
     void setUp() {
         RestAssured.reset();
@@ -48,6 +52,7 @@ class PostControllerIntegrationTest {
         RestAssured.basePath = "/products";
         RestAssured.baseURI = "http://localhost";
 
+        postLikeRepository.deleteAll();
         postRepository.deleteAll();
         productRepository.deleteAll();
         userRepository.deleteAll();
@@ -191,6 +196,108 @@ class PostControllerIntegrationTest {
                 .body("status", equalTo(404))
                 .body("error", equalTo("Not Found"))
                 .body("message", equalTo("Usuário não encontrado: " + userId))
+                .body("timestamp", notNullValue());
+    }
+
+    @Test
+    @DisplayName("Deve dar like em um post e incrementar likesCount")
+    void shouldLikePostSuccessfully() {
+        User user = userRepository.saveAndFlush(new User("userLike"));
+        Product product = productRepository.saveAndFlush(new Product(7001, "Product", "Type", "Brand", "Color", "Notes"));
+
+        Post post = new Post();
+        post.setUser(user);
+        post.setDate(LocalDate.of(2026, 1, 1));
+        post.setProduct(product);
+        post.setCategory(1);
+        post.setPrice(10.0);
+        post.setHasPromo(false);
+        post.setDiscount(null);
+        post.setLikesCount(0);
+
+        Post saved = postRepository.save(post);
+
+        given()
+                .when()
+                .post("/{postId}/like/{userId}", saved.getPostId(), user.getUserId())
+                .then()
+                .statusCode(200)
+                .body(is(emptyOrNullString()));
+
+        Post reloaded = postRepository.findById(saved.getPostId()).orElseThrow();
+        assertThat(reloaded.getLikesCount()).isEqualTo(1);
+        assertThat(postLikeRepository.count()).isEqualTo(1);
+    }
+
+    @Test
+    @DisplayName("Deve remover like de um post e decrementar likesCount")
+    void shouldUnlikePostSuccessfully() {
+        User user = userRepository.saveAndFlush(new User("userUnlike"));
+        Product product = productRepository.saveAndFlush(new Product(7002, "Product", "Type", "Brand", "Color", "Notes"));
+
+        Post post = new Post();
+        post.setUser(user);
+        post.setDate(LocalDate.of(2026, 1, 1));
+        post.setProduct(product);
+        post.setCategory(1);
+        post.setPrice(10.0);
+        post.setHasPromo(false);
+        post.setDiscount(null);
+        post.setLikesCount(0);
+
+        Post saved = postRepository.save(post);
+
+        given()
+                .when()
+                .post("/{postId}/like/{userId}", saved.getPostId(), user.getUserId())
+                .then()
+                .statusCode(200);
+
+        given()
+                .when()
+                .post("/{postId}/unlike/{userId}", saved.getPostId(), user.getUserId())
+                .then()
+                .statusCode(200)
+                .body(is(emptyOrNullString()));
+
+        Post reloaded = postRepository.findById(saved.getPostId()).orElseThrow();
+        assertThat(reloaded.getLikesCount()).isEqualTo(0);
+        assertThat(postLikeRepository.count()).isEqualTo(0);
+    }
+
+    @Test
+    @DisplayName("Deve retornar 400 ao tentar dar like no mesmo post duas vezes")
+    void shouldReturn400WhenUserLikesSamePostTwice() {
+        User user = userRepository.saveAndFlush(new User("userDoubleLike"));
+        Product product = productRepository.saveAndFlush(new Product(7003, "Product", "Type", "Brand", "Color", "Notes"));
+
+        Post post = new Post();
+        post.setUser(user);
+        post.setDate(LocalDate.of(2026, 1, 1));
+        post.setProduct(product);
+        post.setCategory(1);
+        post.setPrice(10.0);
+        post.setHasPromo(false);
+        post.setDiscount(null);
+        post.setLikesCount(0);
+
+        Post saved = postRepository.save(post);
+
+        given()
+                .when()
+                .post("/{postId}/like/{userId}", saved.getPostId(), user.getUserId())
+                .then()
+                .statusCode(200);
+
+        given()
+                .when()
+                .post("/{postId}/like/{userId}", saved.getPostId(), user.getUserId())
+                .then()
+                .statusCode(400)
+                .contentType(ContentType.JSON)
+                .body("status", equalTo(400))
+                .body("error", equalTo("Bad Request"))
+                .body("message", equalTo("Usuário %d já curtiu o post %d".formatted(user.getUserId(), saved.getPostId())))
                 .body("timestamp", notNullValue());
     }
 

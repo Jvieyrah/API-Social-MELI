@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 @RequiredArgsConstructor
@@ -19,6 +20,11 @@ public class PostRepository  implements IPostRepository {
     @Override
     public Post save(Post post) {
         return postJpaRepository.save(post);
+    }
+
+    @Override
+    public Optional<Post> findById(Integer postId) {
+        return postJpaRepository.findById(postId);
     }
 
     @Override

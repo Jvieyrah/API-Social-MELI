@@ -485,8 +485,7 @@ class PostServiceTest {
         Post saved = postCaptor.getValue();
 
         assertEquals(1, saved.getLikesCount());
-        assertNotNull(saved.getLikes());
-        assertEquals(1, saved.getLikes().size());
+        verify(postLikeRepository, times(1)).save(any());
 
         verify(userRepository, times(1)).findById(userId);
         verify(postRepository, times(1)).findById(postId);

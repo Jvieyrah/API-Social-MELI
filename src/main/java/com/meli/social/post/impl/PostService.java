@@ -17,7 +17,6 @@ import com.meli.social.post.model.PostLike;
 import com.meli.social.post.model.Product;
 import com.meli.social.user.inter.UserJpaRepository;
 import com.meli.social.user.model.User;
-import com.meli.social.user.model.UserFollow;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -120,9 +119,9 @@ public class PostService implements IPostService {
         like.setUser(user);
         like.setPost(post);
 
-        post.getLikes().add(like);
-        post.setLikesCount((post.getLikesCount() == null ? 0 : post.getLikesCount()) + 1);
+        postLikeRepository.save(like);
 
+        post.setLikesCount((post.getLikesCount() == null ? 0 : post.getLikesCount()) + 1);
         postRepository.save(post);
     }
 
@@ -143,9 +142,7 @@ public class PostService implements IPostService {
             );
         }
 
-        post.getLikes().removeIf(like -> like.getUser() != null && userId.equals(like.getUser().getUserId()));
         post.setLikesCount(Math.max(0, (post.getLikesCount() == null ? 0 : post.getLikesCount()) - 1));
-
         postRepository.save(post);
     }
 

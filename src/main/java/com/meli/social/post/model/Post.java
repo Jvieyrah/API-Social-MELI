@@ -8,13 +8,11 @@ import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.Set;
 
 @Entity
 @Table(name = "posts")
 @Data
-@ToString(exclude = {"user", "likes"})
+@ToString(exclude = {"user"})
 @EqualsAndHashCode(of = "postId")
 public class Post {
 
@@ -53,8 +51,4 @@ public class Post {
 
     @Column(name = "likes_count")
     private Integer likesCount = 0;
-
-    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonIgnore
-    private Set<PostLike> likes = new HashSet<>();
 }

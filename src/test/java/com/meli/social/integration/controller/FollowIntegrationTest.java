@@ -1,6 +1,7 @@
 package com.meli.social.integration.controller;
 
 import com.meli.social.user.inter.UserJpaRepository;
+import com.meli.social.user.inter.UserFollowJpaRepository;
 import com.meli.social.user.model.User;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
@@ -24,12 +25,16 @@ public class FollowIntegrationTest {
     @Autowired
     private UserJpaRepository userRepository;
 
+    @Autowired
+    private UserFollowJpaRepository userFollowRepository;
+
     @BeforeEach
     void setUp() {
         RestAssured.reset();
         RestAssured.port = port;
         RestAssured.basePath = "";
         RestAssured.baseURI = "http://localhost";
+        userFollowRepository.deleteAll();
         userRepository.deleteAll();
     }
 

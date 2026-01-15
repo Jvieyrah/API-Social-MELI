@@ -1,6 +1,7 @@
 package com.meli.social.integration.controller;
 
 import com.meli.social.user.dto.UserSimpleDTO;
+import com.meli.social.user.inter.UserFollowJpaRepository;
 import com.meli.social.user.inter.UserJpaRepository;
 import com.meli.social.user.model.User;
 import io.restassured.RestAssured;
@@ -31,10 +32,14 @@ class UserControllerIntegrationTest {
     @Autowired
     private UserJpaRepository userRepository;
 
+    @Autowired
+    private UserFollowJpaRepository userFollowRepository;
+
     @BeforeEach
     void setUp() {
         RestAssured.port = port;
         RestAssured.basePath = "/users";
+        userFollowRepository.deleteAll();
         userRepository.deleteAll();
     }
 

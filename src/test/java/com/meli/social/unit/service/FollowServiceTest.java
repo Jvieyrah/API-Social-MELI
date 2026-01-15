@@ -4,6 +4,7 @@ import com.meli.social.exception.PostUnprocessableException;
 import com.meli.social.exception.UserNotFoundException;
 import com.meli.social.user.dto.UserSimpleDTO;
 import com.meli.social.user.impl.FollowService;
+import com.meli.social.user.inter.UserFollowJpaRepository;
 import com.meli.social.user.model.User;
 import com.meli.social.user.inter.UserJpaRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -14,7 +15,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.HashSet;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -26,20 +26,21 @@ public class FollowServiceTest {
     @Mock
     private UserJpaRepository userRepository;
 
+    @Mock
+    private UserFollowJpaRepository userFollowRepository;
+
     @InjectMocks
     private FollowService followService;
 
     @BeforeEach
     void setUp() {
-        reset(userRepository);
+        reset(userRepository, userFollowRepository);
     }
 
     private User createUser(Integer userId, String userName) {
         User user = new User(userName);
         user.setUserId(userId);
         user.setFollowersCount(0);
-        user.setFollowers(new HashSet<>());
-        user.setFollowing(new HashSet<>());
         return user;
     }
 
@@ -51,8 +52,8 @@ public class FollowServiceTest {
         User savedUserA = createUser(1, "test_userA");
         User savedUserB = createUser(2, "test_userB");
 
-        when(userRepository.isFollowing(savedUserA.getUserId(),savedUserB.getUserId())).thenReturn(true);
-        when(userRepository.isFollowing(savedUserB.getUserId(),savedUserA.getUserId())).thenReturn(false);
+        when(userFollowRepository.existsFollow(savedUserA.getUserId(),savedUserB.getUserId())).thenReturn(true);
+        when(userFollowRepository.existsFollow(savedUserB.getUserId(),savedUserA.getUserId())).thenReturn(false);
 
         Boolean resultExpectedTrue =  followService.isFollowing(savedUserA.getUserId(),savedUserB.getUserId());
         Boolean resultExpectedFalse =  followService.isFollowing(savedUserB.getUserId(),savedUserA.getUserId());
@@ -68,7 +69,7 @@ public class FollowServiceTest {
         User userA = createUser(1, "test_userA");
         User userB = createUser(2, "test_userB");
 
-        when(userRepository.isFollowing(userA.getUserId(), userB.getUserId())).thenReturn(false);
+        when(userFollowRepository.existsFollow(userA.getUserId(), userB.getUserId())).thenReturn(false);
         when(userRepository.findById(1)).thenReturn(Optional.of(userA));
         when(userRepository.findById(2)).thenReturn(Optional.of(userB));
         when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
@@ -79,14 +80,14 @@ public class FollowServiceTest {
  
         assertNotNull(result);
         assertEquals(userA, result);
-        assertEquals(1, result.getFollowing().size());
         assertEquals(1, userB.getFollowersCount());
 
  
-        verify(userRepository, times(1)).isFollowing(userA.getUserId(), userB.getUserId());
+        verify(userFollowRepository, times(1)).existsFollow(userA.getUserId(), userB.getUserId());
         verify(userRepository, times(1)).findById(1);
         verify(userRepository, times(1)).findById(2);
-        verify(userRepository, times(1)).save(userA);
+        verify(userFollowRepository, times(1)).save(any());
+        verify(userRepository, times(1)).save(userB);
     }
 
     @Test
@@ -106,7 +107,7 @@ public class FollowServiceTest {
         assertEquals("Os IDs de usuário não podem ser iguais!", exception.getMessage());
 
         // Verificar que nenhuma operação foi executada
-        verify(userRepository, never()).isFollowing(any(), any());
+        verify(userFollowRepository, never()).existsFollow(any(), any());
         verify(userRepository, never()).findById(any());
         verify(userRepository, never()).save(any());
     }
@@ -118,7 +119,7 @@ public class FollowServiceTest {
         Integer followerId = 1;
         Integer followedId = 2;
 
-        when(userRepository.isFollowing(followerId, followedId)).thenReturn(true);
+        when(userFollowRepository.existsFollow(followerId, followedId)).thenReturn(true);
 
 
         PostUnprocessableException exception = assertThrows(
@@ -132,7 +133,7 @@ public class FollowServiceTest {
         assertEquals(expectedMessage, exception.getMessage());
 
         // Verificar que isFollowing foi chamado mas não tentou buscar os usuários
-        verify(userRepository, times(1)).isFollowing(followerId, followedId);
+        verify(userFollowRepository, times(1)).existsFollow(followerId, followedId);
         verify(userRepository, never()).findById(any());
         verify(userRepository, never()).save(any());
     }
@@ -144,7 +145,7 @@ public class FollowServiceTest {
         Integer followerId = 999;
         Integer followedId = 2;
 
-        when(userRepository.isFollowing(followerId, followedId)).thenReturn(false);
+        when(userFollowRepository.existsFollow(followerId, followedId)).thenReturn(false);
         when(userRepository.findById(followerId)).thenReturn(Optional.empty());
 
  
@@ -158,7 +159,7 @@ public class FollowServiceTest {
         assertEquals("Seguidor não encontrado", exception.getMessage());
 
         // Verificar chamadas
-        verify(userRepository, times(1)).isFollowing(followerId, followedId);
+        verify(userFollowRepository, times(1)).existsFollow(followerId, followedId);
         verify(userRepository, times(1)).findById(followerId);
         verify(userRepository, never()).save(any());
     }
@@ -172,7 +173,7 @@ public class FollowServiceTest {
 
         User followerUser = createUser(followerId, "test_follower");
 
-        when(userRepository.isFollowing(followerId, followedId)).thenReturn(false);
+        when(userFollowRepository.existsFollow(followerId, followedId)).thenReturn(false);
         when(userRepository.findById(followerId)).thenReturn(Optional.of(followerUser));
         when(userRepository.findById(followedId)).thenReturn(Optional.empty());
 
@@ -187,7 +188,7 @@ public class FollowServiceTest {
         assertEquals("Usuário a ser seguido não encontrado", exception.getMessage());
 
         // Verificar chamadas
-        verify(userRepository, times(1)).isFollowing(followerId, followedId);
+        verify(userFollowRepository, times(1)).existsFollow(followerId, followedId);
         verify(userRepository, times(1)).findById(followerId);
         verify(userRepository, times(1)).findById(followedId);
         verify(userRepository, never()).save(any());
@@ -200,7 +201,7 @@ public class FollowServiceTest {
         Integer followerId = 888;
         Integer followedId = 999;
 
-        when(userRepository.isFollowing(followerId, followedId)).thenReturn(false);
+        when(userFollowRepository.existsFollow(followerId, followedId)).thenReturn(false);
         when(userRepository.findById(followerId)).thenReturn(Optional.empty());
 
  
@@ -236,7 +237,7 @@ public class FollowServiceTest {
         assertEquals("IDs não podem ser nulos", exception.getMessage());
 
         // Verificar que repository não foi chamado
-        verify(userRepository, never()).isFollowing(any(), any());
+        verify(userFollowRepository, never()).existsFollow(any(), any());
     }
 
     @Test
@@ -257,7 +258,7 @@ public class FollowServiceTest {
         assertEquals("IDs não podem ser nulos", exception.getMessage());
 
         // Verificar que repository não foi chamado
-        verify(userRepository, never()).isFollowing(any(), any());
+        verify(userFollowRepository, never()).existsFollow(any(), any());
     }
 
     @Test
@@ -278,7 +279,7 @@ public class FollowServiceTest {
         assertEquals("IDs não podem ser nulos", exception.getMessage());
 
         // Verificar que repository não foi chamado
-        verify(userRepository, never()).isFollowing(any(), any());
+        verify(userFollowRepository, never()).existsFollow(any(), any());
     }
 
     @Test
@@ -296,7 +297,7 @@ public class FollowServiceTest {
         );
 
         // Verificar que nenhuma operação foi executada
-        verify(userRepository, never()).isFollowing(any(), any());
+        verify(userFollowRepository, never()).existsFollow(any(), any());
         verify(userRepository, never()).findById(any());
         verify(userRepository, never()).save(any());
     }
@@ -313,7 +314,7 @@ public class FollowServiceTest {
                 "Deveria lançar NullPointerException quando followedId é null no followUser"
         );
 
-        verify(userRepository, never()).isFollowing(any(), any());
+        verify(userFollowRepository, never()).existsFollow(any(), any());
         verify(userRepository, never()).findById(any());
         verify(userRepository, never()).save(any());
     }
@@ -325,13 +326,11 @@ public class FollowServiceTest {
         User userA = createUser(1, "test_userA");
         User userB = createUser(2, "test_userB");
 
-        // Simular que userA já segue userB
-        userA.follow(userB);
-
-        when(userRepository.isFollowing(userA.getUserId(), userB.getUserId())).thenReturn(true);
+        when(userFollowRepository.existsFollow(userA.getUserId(), userB.getUserId())).thenReturn(true);
         when(userRepository.findById(1)).thenReturn(Optional.of(userA));
         when(userRepository.findById(2)).thenReturn(Optional.of(userB));
         when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(userFollowRepository.deleteFollow(userA.getUserId(), userB.getUserId())).thenReturn(1);
 
  
         User result = followService.unfollowUser(userA.getUserId(), userB.getUserId());
@@ -339,14 +338,14 @@ public class FollowServiceTest {
  
         assertNotNull(result);
         assertEquals(userA, result);
-        assertEquals(0, result.getFollowing().size());
         assertEquals(0, userB.getFollowersCount());
 
  
-        verify(userRepository, times(1)).isFollowing(userA.getUserId(), userB.getUserId());
+        verify(userFollowRepository, times(1)).existsFollow(userA.getUserId(), userB.getUserId());
         verify(userRepository, times(1)).findById(1);
         verify(userRepository, times(1)).findById(2);
-        verify(userRepository, times(1)).save(userA);
+        verify(userFollowRepository, times(1)).deleteFollow(userA.getUserId(), userB.getUserId());
+        verify(userRepository, times(1)).save(userB);
     }
 
     @Test
@@ -366,7 +365,7 @@ public class FollowServiceTest {
         assertEquals("Os IDs de usuário não podem ser iguais!", exception.getMessage());
 
         // Verificar que nenhuma operação foi executada
-        verify(userRepository, never()).isFollowing(any(), any());
+        verify(userFollowRepository, never()).existsFollow(any(), any());
         verify(userRepository, never()).findById(any());
         verify(userRepository, never()).save(any());
     }
@@ -378,7 +377,7 @@ public class FollowServiceTest {
         Integer followerId = 1;
         Integer followedId = 2;
 
-        when(userRepository.isFollowing(followerId, followedId)).thenReturn(false);
+        when(userFollowRepository.existsFollow(followerId, followedId)).thenReturn(false);
 
 
         PostUnprocessableException exception = assertThrows(
@@ -392,7 +391,7 @@ public class FollowServiceTest {
         assertEquals(expectedMessage, exception.getMessage());
 
         // Verificar que isFollowing foi chamado mas não tentou buscar os usuários
-        verify(userRepository, times(1)).isFollowing(followerId, followedId);
+        verify(userFollowRepository, times(1)).existsFollow(followerId, followedId);
         verify(userRepository, never()).findById(any());
         verify(userRepository, never()).save(any());
     }
@@ -404,7 +403,7 @@ public class FollowServiceTest {
         Integer followerId = 999;
         Integer followedId = 2;
 
-        when(userRepository.isFollowing(followerId, followedId)).thenReturn(true);
+        when(userFollowRepository.existsFollow(followerId, followedId)).thenReturn(true);
         when(userRepository.findById(followerId)).thenReturn(Optional.empty());
 
  
@@ -418,7 +417,7 @@ public class FollowServiceTest {
         assertEquals("Seguidor não encontrado", exception.getMessage());
 
         // Verificar chamadas
-        verify(userRepository, times(1)).isFollowing(followerId, followedId);
+        verify(userFollowRepository, times(1)).existsFollow(followerId, followedId);
         verify(userRepository, times(1)).findById(followerId);
         verify(userRepository, never()).save(any());
     }
@@ -432,7 +431,7 @@ public class FollowServiceTest {
 
         User followerUser = createUser(followerId, "test_follower");
 
-        when(userRepository.isFollowing(followerId, followedId)).thenReturn(true);
+        when(userFollowRepository.existsFollow(followerId, followedId)).thenReturn(true);
         when(userRepository.findById(followerId)).thenReturn(Optional.of(followerUser));
         when(userRepository.findById(followedId)).thenReturn(Optional.empty());
 
@@ -447,7 +446,7 @@ public class FollowServiceTest {
         assertEquals("Usuário a ser deixado de seguir não encontrado", exception.getMessage());
 
         // Verificar chamadas
-        verify(userRepository, times(1)).isFollowing(followerId, followedId);
+        verify(userFollowRepository, times(1)).existsFollow(followerId, followedId);
         verify(userRepository, times(1)).findById(followerId);
         verify(userRepository, times(1)).findById(followedId);
         verify(userRepository, never()).save(any());
@@ -460,7 +459,7 @@ public class FollowServiceTest {
         Integer followerId = 888;
         Integer followedId = 999;
 
-        when(userRepository.isFollowing(followerId, followedId)).thenReturn(true);
+        when(userFollowRepository.existsFollow(followerId, followedId)).thenReturn(true);
         when(userRepository.findById(followerId)).thenReturn(Optional.empty());
 
  
@@ -493,7 +492,7 @@ public class FollowServiceTest {
         );
 
         // Verificar que nenhuma operação foi executada
-        verify(userRepository, never()).isFollowing(any(), any());
+        verify(userFollowRepository, never()).existsFollow(any(), any());
         verify(userRepository, never()).findById(any());
         verify(userRepository, never()).save(any());
     }
@@ -513,7 +512,7 @@ public class FollowServiceTest {
         );
 
         // Verificar que nenhuma operação foi executada
-        verify(userRepository, never()).isFollowing(any(), any());
+        verify(userFollowRepository, never()).existsFollow(any(), any());
         verify(userRepository, never()).findById(any());
         verify(userRepository, never()).save(any());
     }
@@ -537,7 +536,7 @@ public class FollowServiceTest {
     void testReturnUserWithFollowerCounter_WhenUserHaveFolowers(){
         User userA = createUser(1, "test_userA");
         User userB = createUser(2, "test_userB");
-        userB.follow(userA);
+        userA.setFollowersCount(1);
         when(userRepository.findById(1)).thenReturn(Optional.of(userA));
 
         UserSimpleDTO userSimpleDTO = UserSimpleDTO.fromUserWithFollowers(userA);

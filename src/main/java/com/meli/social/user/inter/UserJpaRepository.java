@@ -84,8 +84,6 @@ public interface UserJpaRepository extends JpaRepository<User, Integer> {
 
     @Query("""
         SELECT DISTINCT u FROM User u
-        LEFT JOIN FETCH u.following
-        LEFT JOIN FETCH u.followers
         LEFT JOIN FETCH u.posts
         WHERE u.userId = :userId
         """)

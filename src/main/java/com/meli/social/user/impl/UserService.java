@@ -18,7 +18,7 @@ import java.util.*;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
-public class UserService implements IUserService {
+public class        UserService implements IUserService {
 
     private final UserJpaRepository userRepository;
 

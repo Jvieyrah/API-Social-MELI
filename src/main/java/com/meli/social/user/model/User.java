@@ -17,7 +17,7 @@ import java.util.Set;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@ToString(exclude = {"following", "followers", "posts", "likedPosts"})
+@ToString(exclude = {"posts", "likedPosts"})
 @EqualsAndHashCode(of = "userId")
 public class User {
 
@@ -35,14 +35,6 @@ public class User {
     @Column(name = "followers_count")
     private Integer followersCount = 0;
 
-    @OneToMany(mappedBy = "follower", cascade = CascadeType.ALL, orphanRemoval = true,  fetch = FetchType.LAZY )
-    @JsonIgnore ///
-    private Set<UserFollow> following = new HashSet<>();
-
-    @OneToMany(mappedBy = "followed", cascade = CascadeType.ALL, orphanRemoval = true,  fetch = FetchType.LAZY )
-    @JsonIgnore
-    private Set<UserFollow> followers = new HashSet<>();
-
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore
     private Set<Post> posts = new HashSet<>();
@@ -54,21 +46,6 @@ public class User {
     public User(String userName) {
         this.userName = userName;
         this.followersCount = 0;
-        this.followers = new HashSet<>();
-        this.following = new HashSet<>();
-    }
-
-    public void follow(User userToFollow) {
-        UserFollow userFollow = new UserFollow(this, userToFollow);
-        this.following.add(userFollow);
-        userToFollow.getFollowers().add(userFollow);
-        userToFollow.incrementFollowersCount();
-    }
-
-    public void unfollow(User userToUnfollow) {
-        this.following.removeIf(uf -> uf.getFollowed().equals(userToUnfollow));
-        userToUnfollow.getFollowers().removeIf(uf -> uf.getFollower().equals(this));
-        userToUnfollow.decrementFollowersCount();
     }
 
     public void incrementFollowersCount() {

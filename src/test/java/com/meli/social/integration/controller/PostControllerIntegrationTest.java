@@ -5,7 +5,9 @@ import com.meli.social.post.inter.PostLikeJpaRepository;
 import com.meli.social.post.inter.ProductJpaRepository;
 import com.meli.social.post.model.Post;
 import com.meli.social.post.model.Product;
+import com.meli.social.user.inter.UserFollowJpaRepository;
 import com.meli.social.user.inter.UserJpaRepository;
+import com.meli.social.user.model.UserFollow;
 import com.meli.social.user.model.User;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
@@ -16,6 +18,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.test.context.ActiveProfiles;
+ 
+ import jakarta.persistence.EntityManager;
 
 import java.time.LocalDate;
 import java.util.HashMap;
@@ -37,6 +41,9 @@ class PostControllerIntegrationTest {
     private UserJpaRepository userRepository;
 
     @Autowired
+    private UserFollowJpaRepository userFollowRepository;
+
+    @Autowired
     private PostJpaRepository postRepository;
 
     @Autowired
@@ -44,6 +51,9 @@ class PostControllerIntegrationTest {
 
     @Autowired
     private PostLikeJpaRepository postLikeRepository;
+ 
+     @Autowired
+     private EntityManager entityManager;
 
     @BeforeEach
     void setUp() {
@@ -55,6 +65,7 @@ class PostControllerIntegrationTest {
         postLikeRepository.deleteAll();
         postRepository.deleteAll();
         productRepository.deleteAll();
+        userFollowRepository.deleteAll();
         userRepository.deleteAll();
     }
 
@@ -527,14 +538,14 @@ class PostControllerIntegrationTest {
         User user3 = userRepository.saveAndFlush(new User("testuser3"));
         User user4 = userRepository.saveAndFlush(new User("testuser4"));
 
-        user.follow(user2);
-        user.follow(user3);
+        userFollowRepository.saveAndFlush(new UserFollow(user, user2));
+        userFollowRepository.saveAndFlush(new UserFollow(user, user3));
         // não segue user4
 
-        userRepository.saveAndFlush(user);
+        user2.incrementFollowersCount();
+        user3.incrementFollowersCount();
         userRepository.saveAndFlush(user2);
         userRepository.saveAndFlush(user3);
-        userRepository.saveAndFlush(user4);
 
 
         Post p1 = new Post();
@@ -609,14 +620,14 @@ class PostControllerIntegrationTest {
         User user3 = userRepository.saveAndFlush(new User("testuser3"));
         User user4 = userRepository.saveAndFlush(new User("testuser4"));
 
-        user.follow(user2);
-        user.follow(user3);
+        userFollowRepository.saveAndFlush(new UserFollow(user, user2));
+        userFollowRepository.saveAndFlush(new UserFollow(user, user3));
         // não segue user4
 
-        userRepository.saveAndFlush(user);
+        user2.incrementFollowersCount();
+        user3.incrementFollowersCount();
         userRepository.saveAndFlush(user2);
         userRepository.saveAndFlush(user3);
-        userRepository.saveAndFlush(user4);
 
 
         Post p1 = new Post();
@@ -691,14 +702,15 @@ class PostControllerIntegrationTest {
         User user3 = userRepository.saveAndFlush(new User("testuser3"));
         User user4 = userRepository.saveAndFlush(new User("testuser4"));
 
-        user.follow(user2);
-        user.follow(user3);
+        userFollowRepository.save(new UserFollow(user, user2));
+        userFollowRepository.save(new UserFollow(user, user3));
         // não segue user4
 
-        userRepository.saveAndFlush(user);
+        user2.incrementFollowersCount();
+        user3.incrementFollowersCount();
         userRepository.saveAndFlush(user2);
         userRepository.saveAndFlush(user3);
-        userRepository.saveAndFlush(user4);
+        userFollowRepository.flush();
 
 
         Post p1 = new Post();

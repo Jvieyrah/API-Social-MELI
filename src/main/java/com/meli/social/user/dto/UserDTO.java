@@ -31,34 +31,4 @@ public class UserDTO {
                 user.getFollowersCount()
         );
     }
-
-    public static UserDTO fromEntityWithRelations(User user) {
-        UserDTO dto = new UserDTO(
-                user.getUserId(),
-                user.getUserName(),
-                user.getFollowersCount()
-        );
-
-        // Mapeia followers (quem ME segue)
-        dto.setFollowers(
-                user.getFollowers().stream()
-                        .map(uf -> new UserSimpleDTO(
-                                uf.getFollower().getUserId(),
-                                uf.getFollower().getUserName()
-                        ))
-                        .toList()
-        );
-
-        // Mapeia following (quem EU sigo)
-        dto.setFollowing(
-                user.getFollowing().stream()
-                        .map(uf -> new UserSimpleDTO(
-                                uf.getFollowed().getUserId(),
-                                uf.getFollowed().getUserName()
-                        ))
-                        .toList()
-        );
-
-        return dto;
-    }
 }

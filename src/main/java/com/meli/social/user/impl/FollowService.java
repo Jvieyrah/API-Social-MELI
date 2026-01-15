@@ -4,6 +4,7 @@ import com.meli.social.exception.PostUnprocessableException;
 import com.meli.social.exception.UserNotFoundException;
 import com.meli.social.user.dto.UserSimpleDTO;
 import com.meli.social.user.inter.IFollowService;
+import com.meli.social.user.inter.UserFollowJpaRepository;
 import com.meli.social.user.inter.UserJpaRepository;
 import com.meli.social.user.model.User;
 import com.meli.social.user.model.UserFollow;
@@ -11,14 +12,13 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Optional;
-
 
 @Service
 @RequiredArgsConstructor
 public class FollowService implements IFollowService {
 
     private final UserJpaRepository userRepository;
+    private final UserFollowJpaRepository userFollowRepository;
 
     @Override
     @Transactional
@@ -36,8 +36,11 @@ public class FollowService implements IFollowService {
         User followed = userRepository.findById(followedId)
                 .orElseThrow(() -> new UserNotFoundException("Usuário a ser seguido não encontrado"));
 
-        follower.follow(followed);
-        userRepository.save(follower);
+        UserFollow userFollow = new UserFollow(follower, followed);
+        userFollowRepository.save(userFollow);
+
+        followed.incrementFollowersCount();
+        userRepository.save(followed);
 
         return follower;
     }
@@ -58,9 +61,12 @@ public class FollowService implements IFollowService {
         User followed = userRepository.findById(followedId)
                 .orElseThrow(() -> new UserNotFoundException("Usuário a ser deixado de seguir não encontrado"));
 
-        
-        follower.unfollow(followed);
-        userRepository.save(follower);
+
+        int deleted = userFollowRepository.deleteFollow(followerId, followedId);
+        if (deleted > 0) {
+            followed.decrementFollowersCount();
+            userRepository.save(followed);
+        }
 
         return follower;
     }
@@ -70,7 +76,7 @@ public class FollowService implements IFollowService {
     public boolean isFollowing(Integer followerId, Integer followedId) {
         validateNullsOrEcuals(followerId, followedId);
 
-        return userRepository.isFollowing(followerId, followedId);
+        return userFollowRepository.existsFollow(followerId, followedId);
     }
 
     private static void validateNullsOrEcuals(Integer followerId, Integer followedId) {

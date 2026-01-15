@@ -14,7 +14,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 
@@ -49,8 +48,6 @@ void testCreateUserSuccess() {
     savedUser.setUserId(1);
     savedUser.setUserName(userName);
     savedUser.setFollowersCount(0);
-    savedUser.setFollowers(new HashSet<>());
-    savedUser.setFollowing(new HashSet<>());
 
     when(userRepository.existsByUserName(userName)).thenReturn(false);
     when(userRepository.save(any(User.class))).thenReturn(savedUser);

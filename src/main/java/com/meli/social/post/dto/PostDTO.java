@@ -36,7 +36,7 @@ public class PostDTO {
     private Integer category;
 
     @NotNull
-    @DecimalMax("10000000")
+    @DecimalMax(value = "10000000", message = "Preço máximo permitido é de 10 milhões")
     @JsonAlias({"price"})
     private Double price;
 

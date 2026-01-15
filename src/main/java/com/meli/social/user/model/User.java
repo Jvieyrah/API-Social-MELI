@@ -28,15 +28,15 @@ public class User {
 
     @Column(name = "user_name", unique = true, nullable = false, length = 15)
     @NotNull
-    @Size(max = 15)
-    @Pattern(regexp = "^[\\p{L}\\p{N} ]+$")
+    @Size(max = 15, message = "Nome do usuário deve conter no máximo 15 caracteres")
+    @Pattern(regexp = "^[\\p{L}\\p{N} ]+$", message = "Nome do usuário deve conter apenas letras e números")
     private String userName;
 
     @Column(name = "followers_count")
     private Integer followersCount = 0;
 
     @OneToMany(mappedBy = "follower", cascade = CascadeType.ALL, orphanRemoval = true,  fetch = FetchType.LAZY )
-    @JsonIgnore
+    @JsonIgnore ///
     private Set<UserFollow> following = new HashSet<>();
 
     @OneToMany(mappedBy = "followed", cascade = CascadeType.ALL, orphanRemoval = true,  fetch = FetchType.LAZY )

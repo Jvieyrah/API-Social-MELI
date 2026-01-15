@@ -1,6 +1,7 @@
 package com.meli.social.unit.service;
 
 import com.meli.social.exception.PostNotFoundException;
+import com.meli.social.exception.PostUnprocessableException;
 import com.meli.social.exception.UserNotFoundException;
 import com.meli.social.post.dto.FollowedPostsDTO;
 import com.meli.social.post.dto.PostDTO;
@@ -493,7 +494,7 @@ class PostServiceTest {
     }
 
     @Test
-    @DisplayName("Deve lançar exceção ao curtir um post já curtido")
+    @DisplayName("Deve lançar PostUnprocessableException ao curtir um post já curtido")
     void testLikePost_AlreadyLiked_ShouldThrow() {
         Integer userId = 1;
         Integer postId = 10;
@@ -513,8 +514,8 @@ class PostServiceTest {
         when(postRepository.findById(postId)).thenReturn(Optional.of(post));
         when(postLikeRepository.existsByUser_UserIdAndPost_PostId(userId, postId)).thenReturn(true);
 
-        IllegalArgumentException ex = assertThrows(
-                IllegalArgumentException.class,
+        PostUnprocessableException ex = assertThrows(
+                PostUnprocessableException.class,
                 () -> postService.likePost(postId, userId)
         );
 
@@ -556,7 +557,7 @@ class PostServiceTest {
     }
 
     @Test
-    @DisplayName("Deve lançar exceção ao remover curtida inexistente")
+    @DisplayName("Deve lançar PostUnprocessableException ao remover curtida inexistente")
     void testUnlikePost_NotLiked_ShouldThrow() {
         Integer userId = 1;
         Integer postId = 10;
@@ -576,8 +577,8 @@ class PostServiceTest {
         when(postRepository.findById(postId)).thenReturn(Optional.of(post));
         when(postLikeRepository.deleteByUser_UserIdAndPost_PostId(userId, postId)).thenReturn(0L);
 
-        IllegalArgumentException ex = assertThrows(
-                IllegalArgumentException.class,
+        PostUnprocessableException ex = assertThrows(
+                PostUnprocessableException.class,
                 () -> postService.unlikePost(postId, userId)
         );
 

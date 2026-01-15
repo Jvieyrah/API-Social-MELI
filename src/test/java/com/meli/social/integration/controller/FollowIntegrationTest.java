@@ -65,7 +65,7 @@ public class FollowIntegrationTest {
 
     @Test
     @Order(3)
-    @DisplayName("Deve retornar 400 quando usuário já segue o outro")
+    @DisplayName("Deve retornar 422 quando usuário já segue o outro")
     void testFollowUser_WhenAlreadyFollowing() {
         User userA = createAndSaveUser("usera");
         User userB = createAndSaveUser("userb");
@@ -82,7 +82,7 @@ public class FollowIntegrationTest {
                 .when()
                 .post("/users/{userId}/follow/{userIdToFollow}", userA.getUserId(), userB.getUserId())
                 .then()
-                .statusCode(400);
+                .statusCode(422);
     }
 
     @Test
@@ -150,7 +150,7 @@ public class FollowIntegrationTest {
 
     @Test
     @Order(8)
-    @DisplayName("Deve retornar 400 quando usuário não segue o outro")
+    @DisplayName("Deve retornar 422 quando usuário não segue o outro")
     void testUnfollowUser_WhenNotFollowing() {
         User userA = createAndSaveUser("usera");
         User userB = createAndSaveUser("userb");
@@ -159,7 +159,7 @@ public class FollowIntegrationTest {
                 .when()
                 .post("/users/{userId}/unfollow/{userIdToUnfollow}", userA.getUserId(), userB.getUserId())
                 .then()
-                .statusCode(400);
+                .statusCode(422);
     }
 
 

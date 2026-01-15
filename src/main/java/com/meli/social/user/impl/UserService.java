@@ -33,10 +33,10 @@ public class UserService implements IUserService {
 
     private void validateUserName(String userName) {
         if (userName == null || userName.trim().isEmpty()) {
-            throw new IllegalArgumentException("Username não pode ser vazio");
+            throw new IllegalArgumentException("Nome do usuário não pode ser vazio");
         }
         if (userRepository.existsByUserName(userName)) {
-            throw new IllegalArgumentException("Username já existe: " + userName);
+            throw new IllegalArgumentException("Usuário já existe: " + userName);
         }
     }
 

@@ -22,27 +22,27 @@ public class ProductDTO {
 
     @JsonAlias("productName")
     @NotBlank
-    @Size(max = 40)
-    @Pattern(regexp = "^[\\p{L}\\p{N} ]+$")
+    @Size(max = 40, message = "Nome do produto deve conter no máximo 40 caracteres")
+    @Pattern(regexp = "^[\\p{L}\\p{N} ]+$", message = "Nome do produto deve conter apenas letras e números")
     private String productName;
 
     @NotBlank
-    @Size(max = 40)
-    @Pattern(regexp = "^[\\p{L}\\p{N} ]+$")
+    @Size(max = 15, message = "Tipo do produto deve conter no máximo 15 caracteres")
+    @Pattern(regexp = "^[\\p{L}\\p{N} ]+$", message = "Tipo do produto deve conter apenas letras e números")
     private String type;
 
     @NotBlank
-    @Size(max = 40)
-    @Pattern(regexp = "^[\\p{L}\\p{N} ]+$")
+    @Size(max = 25, message = "Marca do produto deve conter no máximo 25 caracteres")
+    @Pattern(regexp = "^[\\p{L}\\p{N} ]+$", message = "Marca do produto deve conter apenas letras e números")
     private String brand;
 
     @NotBlank
-    @Size(max = 15)
-    @Pattern(regexp = "^[\\p{L}\\p{N} ]+$")
+    @Size(max = 15, message = "Cor do produto deve conter no máximo 15 caracteres")
+    @Pattern(regexp = "^[\\p{L}\\p{N} ]+$", message = "Cor do produto deve conter apenas letras e números")
     private String color;
 
-    @Size(max = 15)
-    @Pattern(regexp = "^[\\p{L}\\p{N} ]+$")
+    @Size(max = 80, message = "Notas do produto deve conter no máximo 80 caracteres")
+    @Pattern(regexp = "^[\\p{L}\\p{N} ]+$", message = "Notas do produto deve conter apenas letras e números")
     private String notes;
 
     public Product toEntity() {

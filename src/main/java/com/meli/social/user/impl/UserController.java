@@ -1,5 +1,6 @@
 package com.meli.social.user.impl;
 
+import com.meli.social.exception.ErrorDTO;
 import com.meli.social.user.dto.UserDTO;
 import com.meli.social.user.dto.UserSimpleDTO;
 import com.meli.social.user.dto.UserWithFollowedDTO;
@@ -36,13 +37,8 @@ public class UserController {
             @ApiResponse(responseCode = "201", description = "Usuário criado", content = @Content(schema = @Schema(implementation = UserSimpleDTO.class))),
             @ApiResponse(responseCode = "400", description = "Requisição inválida", content = @Content)
     })
-    public ResponseEntity<UserSimpleDTO> createNewUser(@RequestBody Map<String, String> request) {
-        String userName = request.get("userName");
-
-        if (userName == null || userName.trim().isEmpty()) {
-            throw new IllegalArgumentException("Username é obrigatório");
-        }
-
+    public ResponseEntity<UserSimpleDTO> createNewUser(@RequestBody Map<String, String> body) {
+        String userName = body.get("userName");
         UserSimpleDTO createdUser = userService.createUser(userName);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
     }
@@ -64,6 +60,7 @@ public class UserController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Follow realizado" , content = @Content),
             @ApiResponse(responseCode = "400", description = "Requisição inválida", content = @Content),
+            @ApiResponse(responseCode = "422", description = "Requisição não processável", content = @Content(schema = @Schema(implementation = ErrorDTO.class))),
             @ApiResponse(responseCode = "404", description = "Usuário não encontrado", content = @Content)
     })
     public ResponseEntity<Void> followUser(
@@ -81,6 +78,7 @@ public class UserController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Unfollow realizado", content = @Content),
             @ApiResponse(responseCode = "400", description = "Requisição inválida", content = @Content),
+            @ApiResponse(responseCode = "422", description = "Requisição não processável", content = @Content(schema = @Schema(implementation = ErrorDTO.class))),
             @ApiResponse(responseCode = "404", description = "Usuário não encontrado", content = @Content)
     })
     public ResponseEntity<Void> unfollowUser(

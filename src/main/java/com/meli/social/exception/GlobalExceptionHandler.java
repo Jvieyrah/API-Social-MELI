@@ -10,91 +10,74 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.time.LocalDateTime;
-import java.util.LinkedHashMap;
-import java.util.Map;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(UserNotFoundException.class)
-    public ResponseEntity<Map<String, Object>> handleUserNotFoundException(UserNotFoundException ex) {
-        Map<String, Object> body = new LinkedHashMap<>();
-        body.put("timestamp", LocalDateTime.now());
-        body.put("status", HttpStatus.NOT_FOUND.value());
-        body.put("error", "Not Found");
-        body.put("message", ex.getMessage());
+    private ErrorDTO buildError(HttpStatus status, String message) {
+        return new ErrorDTO(
+                LocalDateTime.now(),
+                status.value(),
+                status.getReasonPhrase(),
+                message
+        );
+    }
 
+    @ExceptionHandler(UserNotFoundException.class)
+    public ResponseEntity<ErrorDTO> handleUserNotFoundException(UserNotFoundException ex) {
+        ErrorDTO body = buildError(HttpStatus.NOT_FOUND, ex.getMessage());
         return new ResponseEntity<>(body, HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler(PostNotFoundException.class)
-    public ResponseEntity<Map<String, Object>> handlePostNotFoundException(PostNotFoundException ex) {
-        Map<String, Object> body = new LinkedHashMap<>();
-        body.put("timestamp", LocalDateTime.now());
-        body.put("status", HttpStatus.NOT_FOUND.value());
-        body.put("error", "Not Found");
-        body.put("message", ex.getMessage());
-
+    public ResponseEntity<ErrorDTO> handlePostNotFoundException(PostNotFoundException ex) {
+        ErrorDTO body = buildError(HttpStatus.NOT_FOUND, ex.getMessage());
         return new ResponseEntity<>(body, HttpStatus.NOT_FOUND);
     }
 
 
     @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<Map<String, Object>> handleIllegalArgumentException(IllegalArgumentException ex) {
-        Map<String, Object> body = new LinkedHashMap<>();
-        body.put("timestamp", LocalDateTime.now());
-        body.put("status", HttpStatus.BAD_REQUEST.value());
-        body.put("error", "Bad Request");
-        body.put("message", ex.getMessage());
-
+    public ResponseEntity<ErrorDTO> handleIllegalArgumentException(IllegalArgumentException ex) {
+        ErrorDTO body = buildError(HttpStatus.BAD_REQUEST, ex.getMessage());
         return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(ConstraintViolationException.class)
-    public ResponseEntity<Map<String, Object>> handleConstraintViolationException(ConstraintViolationException ex) {
+    public ResponseEntity<ErrorDTO> handleConstraintViolationException(ConstraintViolationException ex) {
         String message = "Dados inválidos";
         ConstraintViolation<?> violation = ex.getConstraintViolations().stream().findFirst().orElse(null);
         if (violation != null) {
-            message = violation.getPropertyPath() + ": " + violation.getMessage();
+            message = violation.getMessage();
         }
 
-        Map<String, Object> body = new LinkedHashMap<>();
-        body.put("timestamp", LocalDateTime.now());
-        body.put("status", HttpStatus.BAD_REQUEST.value());
-        body.put("error", "Bad Request");
-        body.put("message", message);
-
+        ErrorDTO body = buildError(HttpStatus.BAD_REQUEST, message);
         return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Map<String, Object>> handleMethodArgumentNotValidException(MethodArgumentNotValidException ex) {
+    public ResponseEntity<ErrorDTO> handleMethodArgumentNotValidException(MethodArgumentNotValidException ex) {
         String message = "Dados inválidos";
         FieldError fieldError = ex.getBindingResult().getFieldError();
         if (fieldError != null) {
-            message = fieldError.getField() + ": " + fieldError.getDefaultMessage();
+            message = fieldError.getDefaultMessage();
         }
 
-        Map<String, Object> body = new LinkedHashMap<>();
-        body.put("timestamp", LocalDateTime.now());
-        body.put("status", HttpStatus.BAD_REQUEST.value());
-        body.put("error", "Bad Request");
-        body.put("message", message);
-
+        ErrorDTO body = buildError(HttpStatus.BAD_REQUEST, message);
         return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
     }
 
+    @ExceptionHandler(PostUnprocessableException.class)
+    public ResponseEntity<ErrorDTO> handlePostUnprocessableException(PostUnprocessableException ex) {
+        ErrorDTO body = buildError(HttpStatus.UNPROCESSABLE_ENTITY, ex.getMessage());
+        return new ResponseEntity<>(body, HttpStatus.UNPROCESSABLE_ENTITY);
+    }
+
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<Map<String, Object>> handleGeneralException(Exception ex) {
+    public ResponseEntity<ErrorDTO> handleGeneralException(Exception ex) {
         System.err.println("⚠️ Exception capturada: " + ex.getClass().getName());
         System.err.println("⚠️ Mensaje: " + ex.getMessage());
 
-        Map<String, Object> body = new LinkedHashMap<>();
-        body.put("timestamp", LocalDateTime.now());
-        body.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
-        body.put("error", "Internal Server Error");
-        body.put("message", ex.getMessage());
-
+        ErrorDTO body = buildError(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage());
         return new ResponseEntity<>(body, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }

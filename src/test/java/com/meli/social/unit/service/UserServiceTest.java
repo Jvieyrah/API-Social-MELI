@@ -78,7 +78,7 @@ void testCreateUser_UserNameAlreadyExists() {
             () -> userService.createUser(userName)
     );
 
-    assertEquals("Username já existe: " + userName, exception.getMessage());
+    assertEquals("Usuário já existe: " + userName, exception.getMessage());
     verify(userRepository, times(1)).existsByUserName(userName);
     verify(userRepository, never()).save(any(User.class));
 }
@@ -93,7 +93,7 @@ void testCreateUser_EmptyUserName() {
             () -> userService.createUser(userName)
     );
 
-    assertEquals("Username não pode ser vazio", exception.getMessage());
+    assertEquals("Nome do usuário não pode ser vazio", exception.getMessage());
     verify(userRepository, never()).existsByUserName(anyString());
     verify(userRepository, never()).save(any(User.class));
 }
@@ -109,7 +109,7 @@ void testCreateUser_NullUserName() {
             () -> userService.createUser(userName)
     );
 
-    assertEquals("Username não pode ser vazio", exception.getMessage());
+    assertEquals("Nome do usuário não pode ser vazio", exception.getMessage());
     verify(userRepository, never()).existsByUserName(anyString());
     verify(userRepository, never()).save(any(User.class));
 }

@@ -1,5 +1,6 @@
 package com.meli.social.user.impl;
 
+import com.meli.social.exception.PostUnprocessableException;
 import com.meli.social.exception.UserNotFoundException;
 import com.meli.social.user.dto.UserSimpleDTO;
 import com.meli.social.user.inter.IFollowService;
@@ -24,7 +25,7 @@ public class FollowService implements IFollowService {
     public User followUser(Integer followerId, Integer followedId) {
 
         if (isFollowing(followerId, followedId)) {
-            throw new IllegalArgumentException(
+            throw new PostUnprocessableException(
                     "Usuário %d já segue o usuário %d".formatted(followerId, followedId)
             );
         }
@@ -46,7 +47,7 @@ public class FollowService implements IFollowService {
     public User unfollowUser(Integer followerId, Integer followedId) {
 
         if (!isFollowing(followerId, followedId)) {
-            throw new IllegalArgumentException(
+            throw new PostUnprocessableException(
                     "Usuário %d não segue o usuário %d".formatted(followerId, followedId)
             );
         }

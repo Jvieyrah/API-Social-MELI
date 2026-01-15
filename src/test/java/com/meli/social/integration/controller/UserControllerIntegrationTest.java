@@ -76,7 +76,7 @@ class UserControllerIntegrationTest {
                 .statusCode(400)
                 .body("status", equalTo(400))
                 .body("error", equalTo("Bad Request"))
-                .body("message", equalTo("Username é obrigatório"))
+                .body("message", equalTo("Nome do usuário não pode ser vazio"))
                 .body("timestamp", notNullValue());
 
         assertThat(userRepository.count()).isZero();
@@ -97,7 +97,8 @@ class UserControllerIntegrationTest {
                 .post()
                 .then()
                 .statusCode(400)
-                .body("message", equalTo("Username já existe: mariasantos"));
+                .body("message", equalTo(
+                        "Usuário já existe: mariasantos"));
 
         assertThat(userRepository.count()).isEqualTo(1);
     }

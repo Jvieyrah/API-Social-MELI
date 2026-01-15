@@ -1,6 +1,7 @@
 package com.meli.social.post.impl;
 
 import com.meli.social.exception.PostNotFoundException;
+import com.meli.social.exception.PostUnprocessableException;
 import com.meli.social.exception.UserNotFoundException;
 import com.meli.social.post.dto.FollowedPostsDTO;
 import com.meli.social.post.dto.PostDTO;
@@ -110,7 +111,7 @@ public class PostService implements IPostService {
                 .orElseThrow(() -> new PostNotFoundException("Post não encontrado: " + postId));
 
         if (postLikeRepository.existsByUser_UserIdAndPost_PostId(userId, postId)) {
-            throw new IllegalArgumentException(
+            throw new PostUnprocessableException(
                     "Usuário %d já curtiu o post %d".formatted(userId, postId)
             );
         }
@@ -137,7 +138,7 @@ public class PostService implements IPostService {
 
         long deleted = postLikeRepository.deleteByUser_UserIdAndPost_PostId(userId, postId);
         if (deleted == 0) {
-            throw new IllegalArgumentException(
+            throw new PostUnprocessableException(
                     "Usuário %d não curtiu o post %d".formatted(userId, postId)
             );
         }

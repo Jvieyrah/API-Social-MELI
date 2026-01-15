@@ -1,5 +1,6 @@
 package com.meli.social.unit.service;
 
+import com.meli.social.exception.PostUnprocessableException;
 import com.meli.social.exception.UserNotFoundException;
 import com.meli.social.user.dto.UserSimpleDTO;
 import com.meli.social.user.impl.FollowService;
@@ -111,17 +112,17 @@ public class FollowServiceTest {
     }
 
     @Test
-    @DisplayName("Deve lançar IllegalArgumentException quando usuário já segue o outro")
-    void testFollowUser_ShouldThrowIllegalArgumentException_WhenAlreadyFollowing() {
+    @DisplayName("Deve lançar PostUnprocessableException quando usuário já segue o outro")
+    void testFollowUser_ShouldThrowPostUnprocessableException_WhenAlreadyFollowing() {
        
         Integer followerId = 1;
         Integer followedId = 2;
 
         when(userRepository.isFollowing(followerId, followedId)).thenReturn(true);
 
- 
-        IllegalArgumentException exception = assertThrows(
-                IllegalArgumentException.class,
+
+        PostUnprocessableException exception = assertThrows(
+                PostUnprocessableException.class,
                 () -> followService.followUser(followerId, followedId),
                 "Deveria lançar IllegalArgumentException quando usuário já segue o outro"
         );
@@ -371,17 +372,17 @@ public class FollowServiceTest {
     }
 
     @Test
-    @DisplayName("Deve lançar IllegalArgumentException quando usuário não segue o outro")
-    void testUnfollowUser_ShouldThrowIllegalArgumentException_WhenNotFollowing() {
+    @DisplayName("Deve lançar PostUnprocessableException quando usuário não segue o outro")
+    void testUnfollowUser_ShouldThrowPostUnprocessableException_WhenNotFollowing() {
        
         Integer followerId = 1;
         Integer followedId = 2;
 
         when(userRepository.isFollowing(followerId, followedId)).thenReturn(false);
 
- 
-        IllegalArgumentException exception = assertThrows(
-                IllegalArgumentException.class,
+
+        PostUnprocessableException exception = assertThrows(
+                PostUnprocessableException.class,
                 () -> followService.unfollowUser(followerId, followedId),
                 "Deveria lançar IllegalArgumentException quando usuário não segue o outro"
         );

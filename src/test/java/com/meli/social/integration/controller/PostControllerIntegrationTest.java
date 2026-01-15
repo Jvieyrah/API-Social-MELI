@@ -293,10 +293,10 @@ class PostControllerIntegrationTest {
                 .when()
                 .post("/{postId}/like/{userId}", saved.getPostId(), user.getUserId())
                 .then()
-                .statusCode(400)
+                .statusCode(422)
                 .contentType(ContentType.JSON)
-                .body("status", equalTo(400))
-                .body("error", equalTo("Bad Request"))
+                .body("status", equalTo(422))
+                .body("error", equalTo("Unprocessable Entity"))
                 .body("message", equalTo("Usuário %d já curtiu o post %d".formatted(user.getUserId(), saved.getPostId())))
                 .body("timestamp", notNullValue());
     }

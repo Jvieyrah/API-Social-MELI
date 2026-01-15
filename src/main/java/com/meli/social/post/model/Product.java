@@ -24,30 +24,30 @@ public class Product {
 
     @Column(name = "product_name", nullable = false, length = 40)
     @NotBlank
-    @Size(max = 40)
-    @Pattern(regexp = "^[\\p{L}\\p{N} ]+$")
+    @Size(max = 40, message = "Nome do produto deve conter no máximo 40 caracteres")
+    @Pattern(regexp = "^[\\p{L}\\p{N} ]+$", message = "Nome do produto deve conter apenas letras e números")
     private String productName;
 
     @Column(name = "type", length = 15)
     @NotBlank
-    @Size(max = 40)
-    @Pattern(regexp = "^[\\p{L}\\p{N} ]+$")
+    @Size(max = 15, message = "Tipo do produto deve conter no máximo 15 caracteres")
+    @Pattern(regexp = "^[\\p{L}\\p{N} ]+$", message = "Tipo do produto deve conter apenas letras e números")
     private String type;
 
     @Column(name = "brand", length = 25)
     @NotBlank
-    @Size(max = 40)
-    @Pattern(regexp = "^[\\p{L}\\p{N} ]+$")
+    @Size(max = 25, message = "Marca do produto deve conter no máximo 25 caracteres")
+    @Pattern(regexp = "^[\\p{L}\\p{N} ]+$", message = "Marca do produto deve conter apenas letras e números")
     private String brand;
 
     @Column(name = "color", length = 15)
     @NotBlank
-    @Size(max = 15)
-    @Pattern(regexp = "^[\\p{L}\\p{N} ]+$")
+    @Size(max = 15, message = "Cor do produto deve conter no máximo 15 caracteres")
+    @Pattern(regexp = "^[\\p{L}\\p{N} ]+$", message = "Cor do produto deve conter apenas letras e números")
     private String color;
 
     @Column(name = "notes", length = 80)
-    @Size(max = 15)
-    @Pattern(regexp = "^[\\p{L}\\p{N} ]+$")
+    @Size(max = 80, message = "Notas do produto deve conter no máximo 80 caracteres")
+    @Pattern(regexp = "^[\\p{L}\\p{N} ]+$", message = "Notas do produto deve conter apenas letras e números")
     private String notes;
 }

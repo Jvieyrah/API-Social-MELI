@@ -42,7 +42,7 @@ public class Post {
 
     @Column(name = "price",  nullable = false)
     @NotNull
-    @DecimalMax("10000000")
+    @DecimalMax(value = "10000000", message = "Preço máximo permitido é de 10 milhões")
     private Double price;
 
     @Column(name = "has_promo")

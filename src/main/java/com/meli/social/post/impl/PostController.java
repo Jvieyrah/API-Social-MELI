@@ -1,5 +1,6 @@
 package com.meli.social.post.impl;
 
+import com.meli.social.exception.ErrorDTO;
 import com.meli.social.post.dto.*;
 import com.meli.social.post.inter.IPostService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -87,6 +88,7 @@ public class PostController {
     @Operation(summary = "Curtir post")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Like realizado", content = @Content),
+            @ApiResponse(responseCode = "422", description = "Requisição não processável", content = @Content(schema = @Schema(implementation = ErrorDTO.class))),
             @ApiResponse(responseCode = "404", description = "Post ou usuário não encontrado", content = @Content)
     })
     public ResponseEntity<Void> likePost(
@@ -103,6 +105,7 @@ public class PostController {
     @Operation(summary = "Descurtir post")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Unlike realizado", content = @Content),
+            @ApiResponse(responseCode = "422", description = "Requisição não processável", content = @Content(schema = @Schema(implementation = ErrorDTO.class))),
             @ApiResponse(responseCode = "404", description = "Post ou usuário não encontrado", content = @Content)
     })
     public ResponseEntity<Void> unlikePost(

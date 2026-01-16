@@ -134,7 +134,7 @@ public class PostService implements IPostService {
         PageSizeValidation(page, size);
         User user = getUserOrThrow(userId);
 
-        Pageable pageable = PageRequest.of(page, size);
+        Pageable pageable = PageRequest.of(page, size, Sort.by("date").descending().and(Sort.by("postId").descending()));
         List<Post> posts = postRepository.findPromoPostsByUserId(userId, pageable);
         List<PostPromoDTO> promoPostTreated = posts.stream()
                 .map(PostPromoDTO::fromEntity)

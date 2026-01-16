@@ -24,6 +24,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -33,6 +34,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.*;
 
@@ -306,7 +308,8 @@ class PostServiceTest {
 
         List<Post> followingPosts = List.of(p1, p2, p3);
 
-        when(postRepository.findPostsByUserIdInAndDateBetween(eq(List.of(2, 3, 4)), any(), any(), any())).thenReturn(followingPosts);
+        when(postRepository.findPostsByUserIdInAndDateBetween(eq(List.of(2, 3, 4)), any(), any(), any(Pageable.class)))
+                .thenReturn(followingPosts);
 
         FollowedPostsDTO result = postService.getFollowedPosts(1, null);
 
@@ -319,7 +322,7 @@ class PostServiceTest {
 
         verify(userRepository, times(1)).existsById(1);
         verify(userRepository, times(1)).findFollowingIdsByUserId(1);
-
+        verify(postRepository, times(1)).findPostsByUserIdInAndDateBetween(eq(List.of(2, 3, 4)), any(), any(), any(Pageable.class));
 
         UserNotFoundException exception = assertThrows(
                 UserNotFoundException.class,
@@ -344,7 +347,7 @@ class PostServiceTest {
 
         verify(userRepository, times(1)).existsById(999);
         verify(userRepository, times(1)).findFollowingIdsByUserId(999);
-        verify(postRepository, never()).findPostsByUserIdInAndDateBetween(anyList(), any(), any(), any());
+        verify(postRepository, never()).findPostsByUserIdInAndDateBetween(anyList(), any(), any(), any(Pageable.class));
     }
 
     @Test
@@ -413,7 +416,7 @@ class PostServiceTest {
         List<Post> posts = List.of(p1);
 
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
-        when(postRepository.findPromoPostsByUserId(userId)).thenReturn(posts);
+        when(postRepository.findPromoPostsByUserId(eq(userId), any(Pageable.class))).thenReturn(posts);
 
         PromoProducsListDTO result = postService.getPromoProductsList(userId);
 
@@ -434,7 +437,7 @@ class PostServiceTest {
         assertEquals(0.10, dto.getDiscount());
 
         verify(userRepository, times(1)).findById(userId);
-        verify(postRepository, times(1)).findPromoPostsByUserId(userId);
+        verify(postRepository, times(1)).findPromoPostsByUserId(eq(userId), any(Pageable.class));
     }
 
     @Test

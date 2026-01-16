@@ -9,6 +9,8 @@ import com.meli.social.user.inter.UserJpaRepository;
 import com.meli.social.user.model.User;
 import com.meli.social.user.model.UserFollow;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,6 +19,8 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class FollowService implements IFollowService {
 
+    private static final Logger logger = LoggerFactory.getLogger(FollowService.class);
+
     private final UserJpaRepository userRepository;
     private final UserFollowJpaRepository userFollowRepository;
 
@@ -24,7 +28,10 @@ public class FollowService implements IFollowService {
     @Transactional
     public User followUser(Integer followerId, Integer followedId) {
 
+        logger.info("Request to follow followerId={} followedId={}", followerId, followedId);
+
         if (isFollowing(followerId, followedId)) {
+            logger.warn("Follow rejected (already following) followerId={} followedId={}", followerId, followedId);
             throw new PostUnprocessableException(
                     "Usuário %d já segue o usuário %d".formatted(followerId, followedId)
             );
@@ -42,6 +49,8 @@ public class FollowService implements IFollowService {
         followed.incrementFollowersCount();
         userRepository.save(followed);
 
+        logger.info("Follow created followerId={} followedId={} followedFollowersCount={}", followerId, followedId, followed.getFollowersCount());
+
         return follower;
     }
 
@@ -49,7 +58,10 @@ public class FollowService implements IFollowService {
     @Transactional
     public User unfollowUser(Integer followerId, Integer followedId) {
 
+        logger.info("Request to unfollow followerId={} followedId={}", followerId, followedId);
+
         if (!isFollowing(followerId, followedId)) {
+            logger.warn("Unfollow rejected (not following) followerId={} followedId={}", followerId, followedId);
             throw new PostUnprocessableException(
                     "Usuário %d não segue o usuário %d".formatted(followerId, followedId)
             );
@@ -66,6 +78,9 @@ public class FollowService implements IFollowService {
         if (deleted > 0) {
             followed.decrementFollowersCount();
             userRepository.save(followed);
+            logger.info("Unfollow completed followerId={} followedId={} followedFollowersCount={}", followerId, followedId, followed.getFollowersCount());
+        } else {
+            logger.warn("Unfollow did not delete relationship followerId={} followedId={}", followerId, followedId);
         }
 
         return follower;
@@ -92,6 +107,7 @@ public class FollowService implements IFollowService {
     @Override
     @Transactional(readOnly = true)
     public UserSimpleDTO returnUserWithFollowerCounter (Integer userId){
+        logger.info("Request to get follower counter userId={}", userId);
         User follower = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("Usuário não encontrado"));
 

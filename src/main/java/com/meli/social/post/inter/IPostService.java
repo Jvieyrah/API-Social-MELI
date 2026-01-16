@@ -10,9 +10,13 @@ public interface IPostService {
 
     FollowedPostsDTO getFollowedPosts(Integer userId, String sort);
 
+    FollowedPostsDTO getFollowedPosts(Integer userId, String sort, int page, int size);
+
     PromoProductsCountDTO getPromoProductsCount(Integer userId);
 
     PromoProducsListDTO getPromoProductsList(Integer userId);
+
+    PromoProducsListDTO getPromoProductsList(Integer userId, int page, int size);
 
     void likePost(Integer postId, Integer userId);
 

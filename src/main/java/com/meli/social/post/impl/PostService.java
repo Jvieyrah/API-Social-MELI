@@ -18,6 +18,10 @@ import com.meli.social.post.model.Product;
 import com.meli.social.user.inter.UserJpaRepository;
 import com.meli.social.user.model.User;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,6 +37,9 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class PostService implements IPostService {
+
+    private static final Logger logger = LoggerFactory.getLogger(PostService.class);
+
     private final IPostRepository postRepository;
     private final IProductRepository productRepository;
     private final UserJpaRepository userRepository;
@@ -42,11 +49,15 @@ public class PostService implements IPostService {
     @Transactional
     public Boolean createPost(PostDTO newPost) {
         if (newPost == null) {
+            logger.warn("Invalid post creation request (null body)");
             throw new IllegalArgumentException("Post não pode ser nulo");
         }
         if (newPost.getUserId() == null) {
+            logger.warn("Invalid post creation request (null userId)");
             throw new IllegalArgumentException("UserId não pode ser nulo");
         }
+
+        logger.info("Creating post userId={} hasPromo={}", newPost.getUserId(), (newPost instanceof PostPromoDTO));
 
         User user = getUserOrThrow(newPost.getUserId());
 
@@ -55,20 +66,31 @@ public class PostService implements IPostService {
         post.setProduct(resolveProduct(post.getProduct()));
 
         postRepository.save(post);
+        logger.info("Post persisted userId={} postDate={}", user.getUserId(), post.getDate());
         return true;
     }
 
     @Override
     public FollowedPostsDTO getFollowedPosts(Integer userId, String sort) {
+        return getFollowedPosts(userId, sort, 0, 100);
+    }
+
+    @Override
+    public FollowedPostsDTO getFollowedPosts(Integer userId, String sort, int page, int size) {
+        logger.info("Fetching feed userId={} sort={} page={} size={}", userId, sort, page, size);
         if (!userRepository.existsById(userId)){
+            logger.warn("Feed requested for non-existing userId={}", userId);
             throw new UserNotFoundException("Usuário não encontrado: " + userId);
         }
+
+        PageSizeValidation(page, size);
 
         FollowedPostsDTO followedPosts =  new FollowedPostsDTO();
         followedPosts.setUserId(userId);
 
         List<Integer> userFollows = userRepository.findFollowingIdsByUserId(userId);
         if (userFollows.isEmpty()) {
+            logger.info("Feed empty (user follows nobody) userId={}", userId);
             return new FollowedPostsDTO(userId, null);
         }
         LocalDate endDate = LocalDate.now();
@@ -76,12 +98,25 @@ public class PostService implements IPostService {
         Sort sortSpec = (sort == null || sort.isBlank() || sort.equalsIgnoreCase("date_desc"))
                 ? Sort.by("date").descending()
                 : sort.equalsIgnoreCase("date_asc") ? Sort.by("date").ascending() : Sort.by("date").descending();
-        List<Post> posts = postRepository.findPostsByUserIdInAndDateBetween(userFollows, startDate, endDate, sortSpec);
+
+        Pageable pageable = PageRequest.of(page, size, sortSpec);
+        List<Post> posts = postRepository.findPostsByUserIdInAndDateBetween(userFollows, startDate, endDate, pageable);
+        logger.info("Feed fetched userId={} postsCount={}", userId, posts == null ? 0 : posts.size());
         return new FollowedPostsDTO(userId, posts);
+    }
+
+    private static void PageSizeValidation(int page, int size) {
+        if (page < 0) {
+            throw new IllegalArgumentException("Page inválida: " + page);
+        }
+        if (size <= 0 || size > 100) {
+            throw new IllegalArgumentException("Size inválido: " + size);
+        }
     }
 
     @Override
     public PromoProductsCountDTO getPromoProductsCount(Integer userId) {
+        logger.info("Counting promo posts userId={}", userId);
         User user = getUserOrThrow(userId);
 
         long count = postRepository.countPromoPostsByUserId(userId);
@@ -90,9 +125,17 @@ public class PostService implements IPostService {
 
     @Override
     public PromoProducsListDTO getPromoProductsList(Integer userId) {
+        return getPromoProductsList(userId, 0, 100);
+    }
+
+    @Override
+    public PromoProducsListDTO getPromoProductsList(Integer userId, int page, int size) {
+        logger.info("Listing promo posts userId={} page={} size={}", userId, page, size);
+        PageSizeValidation(page, size);
         User user = getUserOrThrow(userId);
 
-        List<Post> posts = postRepository.findPromoPostsByUserId(userId);
+        Pageable pageable = PageRequest.of(page, size);
+        List<Post> posts = postRepository.findPromoPostsByUserId(userId, pageable);
         List<PostPromoDTO> promoPostTreated = posts.stream()
                 .map(PostPromoDTO::fromEntity)
                 .collect(Collectors.toList());
@@ -102,6 +145,7 @@ public class PostService implements IPostService {
     @Override
     @Transactional
     public void likePost(Integer postId, Integer userId) {
+        logger.info("Liking post postId={} userId={}", postId, userId);
         validateNotNullOrThrow(postId, userId);
 
         User user = getUserOrThrow(userId);
@@ -110,6 +154,7 @@ public class PostService implements IPostService {
                 .orElseThrow(() -> new PostNotFoundException("Post não encontrado: " + postId));
 
         if (postLikeRepository.existsByUser_UserIdAndPost_PostId(userId, postId)) {
+            logger.warn("Like rejected (already liked) postId={} userId={}", postId, userId);
             throw new PostUnprocessableException(
                     "Usuário %d já curtiu o post %d".formatted(userId, postId)
             );
@@ -123,11 +168,13 @@ public class PostService implements IPostService {
 
         post.setLikesCount((post.getLikesCount() == null ? 0 : post.getLikesCount()) + 1);
         postRepository.save(post);
+        logger.info("Post liked postId={} userId={} likesCount={}", postId, userId, post.getLikesCount());
     }
 
     @Override
     @Transactional
     public void unlikePost(Integer postId, Integer userId) {
+        logger.info("Unliking post postId={} userId={}", postId, userId);
         validateNotNullOrThrow(postId, userId);
 
         getUserOrThrow(userId);
@@ -137,6 +184,7 @@ public class PostService implements IPostService {
 
         long deleted = postLikeRepository.deleteByUser_UserIdAndPost_PostId(userId, postId);
         if (deleted == 0) {
+            logger.warn("Unlike rejected (not liked) postId={} userId={}", postId, userId);
             throw new PostUnprocessableException(
                     "Usuário %d não curtiu o post %d".formatted(userId, postId)
             );
@@ -144,6 +192,7 @@ public class PostService implements IPostService {
 
         post.setLikesCount(Math.max(0, (post.getLikesCount() == null ? 0 : post.getLikesCount()) - 1));
         postRepository.save(post);
+        logger.info("Post unliked postId={} userId={} likesCount={}", postId, userId, post.getLikesCount());
     }
 
     private static void validateNotNullOrThrow(Integer postId, Integer userId) {

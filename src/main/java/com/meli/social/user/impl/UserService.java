@@ -8,6 +8,9 @@ import com.meli.social.user.inter.IUserService;
 import com.meli.social.user.inter.UserJpaRepository;
 import com.meli.social.user.model.User;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -20,28 +23,35 @@ import java.util.*;
 @Transactional(readOnly = true)
 public class        UserService implements IUserService {
 
+    private static final Logger logger = LoggerFactory.getLogger(UserService.class);
+
     private final UserJpaRepository userRepository;
 
     @Override
     @Transactional
     public UserSimpleDTO createUser(String userName) {
+        logger.info("Creating user userName={}", userName);
         validateUserName(userName);
         User user = new User(userName);
         User savedUser = userRepository.save(user);
+        logger.info("User persisted userId={} userName={}", savedUser.getUserId(), savedUser.getUserName());
         return UserSimpleDTO.fromUser(savedUser);
     }
 
     private void validateUserName(String userName) {
         if (userName == null || userName.trim().isEmpty()) {
+            logger.warn("Invalid userName (blank)");
             throw new IllegalArgumentException("Nome do usuário não pode ser vazio");
         }
         if (userRepository.existsByUserName(userName)) {
+            logger.warn("User already exists userName={}", userName);
             throw new IllegalArgumentException("Usuário já existe: " + userName);
         }
     }
 
     // Buscar top users (SEM relacionamentos lazy)
     public List<UserDTO> getTopUsers(int limit) {
+        logger.info("Fetching top users limit={}", limit);
         List<User> users = userRepository.findAllByOrderByFollowersCountDesc(
                 PageRequest.of(0, limit)
         );
@@ -79,6 +89,31 @@ public class        UserService implements IUserService {
         return UserWithFollowersDTO.withFollowers(mainUser, followersDTO);
     }
 
+    @Override
+    public UserWithFollowersDTO getFollowers(Integer userId, String order, int page, int size) {
+        logger.info("Fetching followers userId={} order={} page={} size={}", userId, order, page, size);
+        validatePageRequest(page, size);
+        User mainUser = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado: " + userId));
+
+        PageRequest pageRequest = PageRequest.of(page, size);
+        Page<User> followersPage;
+        if (order == null || order.trim().isEmpty()) {
+            followersPage = userRepository.findFollowersByUserId(userId, pageRequest);
+        } else if ("name_asc".equalsIgnoreCase(order)) {
+            followersPage = userRepository.findFollowersByUserIdOrderByNameAsc(userId, pageRequest);
+        } else if ("name_desc".equalsIgnoreCase(order)) {
+            followersPage = userRepository.findFollowersByUserIdOrderByNameDesc(userId, pageRequest);
+        } else {
+            throw new IllegalArgumentException("Order inválido: " + order);
+        }
+        List<UserSimpleDTO> followersDTO = followersPage.getContent().stream()
+                .map(user -> new UserSimpleDTO(user.getUserId(), user.getUserName()))
+                .toList();
+
+        return UserWithFollowersDTO.withFollowers(mainUser, followersDTO);
+    }
+
 
     @Override
     public UserWithFollowedDTO getFollowing(Integer userId,String order) {
@@ -95,11 +130,46 @@ public class        UserService implements IUserService {
         } else {
             throw new IllegalArgumentException("Order inválido: " + order);
         }
+
         List<UserSimpleDTO> followingDTD = following.stream()
                 .map(user -> new UserSimpleDTO(user.getUserId(), user.getUserName())) // <- estudar a implementacao de uma classe mapper aqui.
                 .toList();
 
         return UserWithFollowedDTO.withFollowed(mainUser, followingDTD);
+    }
+
+    @Override
+    public UserWithFollowedDTO getFollowing(Integer userId, String order, int page, int size) {
+        logger.info("Fetching following userId={} order={} page={} size={}", userId, order, page, size);
+        validatePageRequest(page, size);
+        User mainUser = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado: " + userId));
+
+        PageRequest pageRequest = PageRequest.of(page, size);
+        Page<User> followingPage;
+        if (order == null || order.trim().isEmpty()) {
+            followingPage = userRepository.findFollowingByUserId(userId, pageRequest);
+        } else if ("name_asc".equalsIgnoreCase(order)) {
+            followingPage = userRepository.findFollowingByUserIdOrderByNameAsc(userId, pageRequest);
+        } else if ("name_desc".equalsIgnoreCase(order)) {
+            followingPage = userRepository.findFollowingByUserIdOrderByNameDesc(userId, pageRequest);
+        } else {
+            throw new IllegalArgumentException("Order inválido: " + order);
+        }
+        List<UserSimpleDTO> followingDTO = followingPage.getContent().stream()
+                .map(user -> new UserSimpleDTO(user.getUserId(), user.getUserName()))
+                .toList();
+
+        return UserWithFollowedDTO.withFollowed(mainUser, followingDTO);
+    }
+
+    private static void validatePageRequest(int page, int size) {
+        if (page < 0) {
+            throw new IllegalArgumentException("Page inválida: " + page);
+        }
+        if (size <= 0 || size > 100) {
+            throw new IllegalArgumentException("Size inválido: " + size);
+        }
     }
 
 }

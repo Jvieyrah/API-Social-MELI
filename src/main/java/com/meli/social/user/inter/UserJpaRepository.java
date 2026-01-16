@@ -1,6 +1,7 @@
 package com.meli.social.user.inter;
 
 import com.meli.social.user.model.User;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -27,6 +28,26 @@ public interface UserJpaRepository extends JpaRepository<User, Integer> {
         """)
     List<User> findFollowersByUserId(@Param("userId") Integer userId);
 
+    @Query("""
+        SELECT uf.follower FROM UserFollow uf 
+        WHERE uf.followed.userId = :userId
+        """)
+    Page<User> findFollowersByUserId(@Param("userId") Integer userId, Pageable pageable);
+
+    @Query("""
+        SELECT uf.follower FROM UserFollow uf
+        WHERE uf.followed.userId = :userId
+        ORDER BY uf.follower.userName ASC
+        """)
+    Page<User> findFollowersByUserIdOrderByNameAsc(@Param("userId") Integer userId, Pageable pageable);
+
+    @Query("""
+        SELECT uf.follower FROM UserFollow uf
+        WHERE uf.followed.userId = :userId
+        ORDER BY uf.follower.userName DESC
+        """)
+    Page<User> findFollowersByUserIdOrderByNameDesc(@Param("userId") Integer userId, Pageable pageable);
+
 
     @Query("""
         SELECT uf.follower FROM UserFollow uf 
@@ -47,6 +68,26 @@ public interface UserJpaRepository extends JpaRepository<User, Integer> {
         WHERE uf.follower.userId = :userId
         """)
     List<User> findFollowingByUserId(@Param("userId") Integer userId);
+
+    @Query("""
+        SELECT uf.followed FROM UserFollow uf 
+        WHERE uf.follower.userId = :userId
+        """)
+    Page<User> findFollowingByUserId(@Param("userId") Integer userId, Pageable pageable);
+
+    @Query("""
+        SELECT uf.followed FROM UserFollow uf
+        WHERE uf.follower.userId = :userId
+        ORDER BY uf.followed.userName ASC
+        """)
+    Page<User> findFollowingByUserIdOrderByNameAsc(@Param("userId") Integer userId, Pageable pageable);
+
+    @Query("""
+        SELECT uf.followed FROM UserFollow uf
+        WHERE uf.follower.userId = :userId
+        ORDER BY uf.followed.userName DESC
+        """)
+    Page<User> findFollowingByUserIdOrderByNameDesc(@Param("userId") Integer userId, Pageable pageable);
 
     @Query("""
         SELECT uf.followed FROM UserFollow uf 

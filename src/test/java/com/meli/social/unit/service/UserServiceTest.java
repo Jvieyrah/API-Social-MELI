@@ -13,6 +13,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 
 import java.util.List;
 import java.util.Optional;
@@ -20,6 +22,7 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -315,6 +318,87 @@ void testGetFollowingSuccess() {
 
     verify(userRepository, times(1)).findById(userId);
     verify(userRepository, times(1)).findFollowingByUserId(userId);
+}
+
+@Test
+@DisplayName("Deve paginar followers corretamente")
+void testGetFollowersPagination() {
+    Integer userId = 1;
+
+    User mainUser = new User();
+    mainUser.setUserId(userId);
+    mainUser.setUserName("main_user");
+
+    User follower1 = new User();
+    follower1.setUserId(2);
+    follower1.setUserName("follower_1");
+
+    User follower2 = new User();
+    follower2.setUserId(3);
+    follower2.setUserName("follower_2");
+
+    User follower3 = new User();
+    follower3.setUserId(4);
+    follower3.setUserName("follower_3");
+
+    when(userRepository.findById(userId)).thenReturn(Optional.of(mainUser));
+    when(userRepository.findFollowersByUserId(eq(userId), any(PageRequest.class)))
+            .thenReturn(new PageImpl<>(List.of(follower1, follower2), PageRequest.of(0, 2), 3));
+
+    UserWithFollowersDTO page0 = userService.getFollowers(userId, null, 0, 2);
+    assertNotNull(page0.getFollowers());
+    assertEquals(2, page0.getFollowers().size());
+    assertEquals(2, page0.getFollowers().get(0).getUserId());
+    assertEquals(3, page0.getFollowers().get(1).getUserId());
+
+    when(userRepository.findFollowersByUserId(eq(userId), any(PageRequest.class)))
+            .thenReturn(new PageImpl<>(List.of(follower3), PageRequest.of(1, 2), 3));
+
+    UserWithFollowersDTO page1 = userService.getFollowers(userId, null, 1, 2);
+    assertNotNull(page1.getFollowers());
+    assertEquals(1, page1.getFollowers().size());
+    assertEquals(4, page1.getFollowers().get(0).getUserId());
+
+    verify(userRepository, times(2)).findById(userId);
+    verify(userRepository, times(2)).findFollowersByUserId(eq(userId), any(PageRequest.class));
+}
+
+@Test
+@DisplayName("Deve paginar following corretamente")
+void testGetFollowingPagination() {
+    Integer userId = 1;
+
+    User mainUser = new User();
+    mainUser.setUserId(userId);
+    mainUser.setUserName("main_user");
+
+    User following1 = new User();
+    following1.setUserId(2);
+    following1.setUserName("following_1");
+
+    User following2 = new User();
+    following2.setUserId(3);
+    following2.setUserName("following_2");
+
+    when(userRepository.findById(userId)).thenReturn(Optional.of(mainUser));
+    when(userRepository.findFollowingByUserId(eq(userId), any(PageRequest.class)))
+            .thenReturn(new PageImpl<>(List.of(following1), PageRequest.of(0, 1), 2));
+
+    UserWithFollowedDTO page0 = userService.getFollowing(userId, null, 0, 1);
+    assertNotNull(page0.getFollowed());
+    assertEquals(1, page0.getFollowed().size());
+    assertEquals(2, page0.getFollowed().get(0).getUserId());
+
+    when(userRepository.findFollowingByUserId(eq(userId), any(PageRequest.class)))
+            .thenReturn(new PageImpl<>(List.of(following2), PageRequest.of(1, 1), 2));
+
+    UserWithFollowedDTO page1 = userService.getFollowing(userId, null, 1, 1);
+    assertNotNull(page1.getFollowed());
+    assertEquals(1, page1.getFollowed().size());
+    assertEquals(3, page1.getFollowed().get(0).getUserId());
+
+    verify(userRepository, times(2)).findById(userId);
+    verify(userRepository, times(2)).findFollowingByUserId(eq(userId), any(PageRequest.class));
 }
 
     @Test

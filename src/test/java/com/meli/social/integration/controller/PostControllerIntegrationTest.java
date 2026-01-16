@@ -51,9 +51,9 @@ class PostControllerIntegrationTest {
 
     @Autowired
     private PostLikeJpaRepository postLikeRepository;
- 
-     @Autowired
-     private EntityManager entityManager;
+
+    @Autowired
+    private EntityManager entityManager;
 
     @BeforeEach
     void setUp() {
@@ -364,10 +364,8 @@ class PostControllerIntegrationTest {
                 .body("userId", is(user.getUserId()))
                 .body("userName", is("vendedor1"))
                 .body("posts", hasSize(2))
-                .body("posts.userId", everyItem(is(user.getUserId())))
-                .body("posts.hasPromo", everyItem(is(true)))
-                .body("posts.discount", containsInAnyOrder(0.10F, 0.20F))
-                .body("posts.date", containsInAnyOrder("2026-01-01", "2026-01-02"));
+                .body("posts[0].postId", is(promo2.getPostId()))
+                .body("posts[1].postId", is(promo1.getPostId()));
     }
 
     @Test
@@ -791,6 +789,92 @@ class PostControllerIntegrationTest {
                 .body("error", equalTo("Not Found"))
                 .body("message", equalTo("Usuário não encontrado: 99999"))
                 .body("timestamp", notNullValue());
+    }
+
+    @Test
+    @DisplayName("Deve retornar 400 quando page for negativa no feed")
+    void shouldReturn400WhenFeedPageIsNegative() {
+        User user = userRepository.saveAndFlush(new User("testuser"));
+
+        given()
+                .when()
+                .get("/followed/{userId}/list?page={page}", user.getUserId(), -1)
+                .then()
+                .statusCode(400)
+                .contentType(ContentType.JSON)
+                .body("status", equalTo(400))
+                .body("error", equalTo("Bad Request"))
+                .body("message", equalTo("Page inválida: -1"))
+                .body("timestamp", notNullValue());
+    }
+
+    @Test
+    @DisplayName("Deve retornar 400 quando size for inválido (0) no feed")
+    void shouldReturn400WhenFeedSizeIsZero() {
+        User user = userRepository.saveAndFlush(new User("testuser"));
+
+        given()
+                .when()
+                .get("/followed/{userId}/list?size={size}", user.getUserId(), 0)
+                .then()
+                .statusCode(400)
+                .contentType(ContentType.JSON)
+                .body("status", equalTo(400))
+                .body("error", equalTo("Bad Request"))
+                .body("message", equalTo("Size inválido: 0"))
+                .body("timestamp", notNullValue());
+    }
+
+    @Test
+    @DisplayName("Deve retornar 400 quando size for maior que 100 na listagem de promo")
+    void shouldReturn400WhenPromoListSizeIsGreaterThan100() {
+        given()
+                .when()
+                .get("/promo-pub/list?userId={userId}&size={size}", 1, 101)
+                .then()
+                .statusCode(400)
+                .contentType(ContentType.JSON)
+                .body("status", equalTo(400))
+                .body("error", equalTo("Bad Request"))
+                .body("message", equalTo("Size inválido: 101"))
+                .body("timestamp", notNullValue());
+    }
+
+    @Test
+    @DisplayName("Deve retornar 400 quando productId for nulo no publish (resolveProduct)")
+    void shouldReturn400WhenPublishProductIdIsNull() {
+        User user = userRepository.saveAndFlush(new User("usertest"));
+
+        Map<String, Object> product = new HashMap<>();
+        product.put("productId", null);
+        product.put("productName", "Mouse Gamer");
+        product.put("type", "Periférico");
+        product.put("brand", "Logitech");
+        product.put("color", "Preto");
+        product.put("notes", "Teste");
+
+        Map<String, Object> request = new HashMap<>();
+        request.put("userId", user.getUserId());
+        request.put("date", null);
+        request.put("product", product);
+        request.put("category", 58);
+        request.put("price", 299.90);
+
+        given()
+                .contentType(ContentType.JSON)
+                .body(request)
+                .when()
+                .post("/publish")
+                .then()
+                .statusCode(400)
+                .contentType(ContentType.JSON)
+                .body("status", equalTo(400))
+                .body("error", equalTo("Bad Request"))
+                .body("message", equalTo("ProductId não pode ser nulo"))
+                .body("timestamp", notNullValue());
+
+        assertThat(postRepository.count()).isZero();
+        assertThat(productRepository.count()).isZero();
     }
 
 }

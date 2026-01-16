@@ -1,6 +1,11 @@
 package com.meli.social.integration.controller;
 
+import com.meli.social.post.inter.PostJpaRepository;
+import com.meli.social.post.inter.PostLikeJpaRepository;
 import com.meli.social.post.inter.ProductJpaRepository;
+import com.meli.social.user.dto.UserSimpleDTO;
+import com.meli.social.user.inter.UserFollowJpaRepository;
+import com.meli.social.user.inter.UserJpaRepository;
 import com.meli.social.post.model.Product;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
@@ -24,7 +29,19 @@ class ProductControllerIntegrationTest {
     private int port;
 
     @Autowired
+    private UserJpaRepository userRepository;
+
+    @Autowired
+    private UserFollowJpaRepository userFollowRepository;
+
+    @Autowired
+    private PostJpaRepository postRepository;
+
+    @Autowired
     private ProductJpaRepository productRepository;
+
+    @Autowired
+    private PostLikeJpaRepository postLikeRepository;
 
     @BeforeEach
     void setUp() {
@@ -33,7 +50,11 @@ class ProductControllerIntegrationTest {
         RestAssured.basePath = "/products";
         RestAssured.baseURI = "http://localhost";
 
+        postLikeRepository.deleteAll();
+        postRepository.deleteAll();
         productRepository.deleteAll();
+        userFollowRepository.deleteAll();
+        userRepository.deleteAll();
     }
 
     @Test

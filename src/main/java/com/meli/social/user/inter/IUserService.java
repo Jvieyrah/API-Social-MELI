@@ -17,7 +17,11 @@ public interface IUserService {
 
     UserWithFollowersDTO getFollowers(Integer userId, String order);
 
+    UserWithFollowersDTO getFollowers(Integer userId, String order, int page, int size);
+
     UserWithFollowedDTO getFollowing(Integer userId, String order);
+
+    UserWithFollowedDTO getFollowing(Integer userId, String order, int page, int size);
 
     List<UserDTO> getTopUsers(int limit);
 

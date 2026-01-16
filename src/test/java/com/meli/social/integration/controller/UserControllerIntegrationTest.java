@@ -152,6 +152,37 @@ class UserControllerIntegrationTest {
     }
 
     @Test
+    @DisplayName("Deve paginar a lista de following do usuário")
+    void shouldPaginateUserFollowingList() {
+        User userA = createAndSaveUser("usera");
+        User userB = createAndSaveUser("userb");
+        User userC = createAndSaveUser("userc");
+
+        given().when().post("/{userId}/follow/{userIdToFollow}", userA.getUserId(), userB.getUserId()).then().statusCode(200);
+        given().when().post("/{userId}/follow/{userIdToFollow}", userA.getUserId(), userC.getUserId()).then().statusCode(200);
+
+        given()
+                .when()
+                .get("/{userId}/followed/list?page=0&size=1", userA.getUserId())
+                .then()
+                .statusCode(200)
+                .contentType(ContentType.JSON)
+                .body("userId", is(userA.getUserId()))
+                .body("userName", is(userA.getUserName()))
+                .body("followed", hasSize(1));
+
+        given()
+                .when()
+                .get("/{userId}/followed/list?page=1&size=1", userA.getUserId())
+                .then()
+                .statusCode(200)
+                .contentType(ContentType.JSON)
+                .body("userId", is(userA.getUserId()))
+                .body("userName", is(userA.getUserName()))
+                .body("followed", hasSize(1));
+    }
+
+    @Test
     @DisplayName("Deve retornar a lista de following do usuário em ordem alfabética cescente")
     void shouldReturnUserFollowingList_ascending() {
         User userA = createAndSaveUser("usera");
@@ -257,6 +288,37 @@ class UserControllerIntegrationTest {
                 .body("followers", hasSize(2))
                 .body("followers.userId", containsInAnyOrder(userB.getUserId(), userC.getUserId()))
                 .body("followers.userName", containsInAnyOrder(userB.getUserName(), userC.getUserName()));
+    }
+
+    @Test
+    @DisplayName("Deve paginar a lista de followers do usuário")
+    void shouldPaginateUserFollowersList() {
+        User userA = createAndSaveUser("usera");
+        User userB = createAndSaveUser("userb");
+        User userC = createAndSaveUser("userc");
+
+        given().when().post("/{userId}/follow/{userIdToFollow}", userB.getUserId(), userA.getUserId()).then().statusCode(200);
+        given().when().post("/{userId}/follow/{userIdToFollow}", userC.getUserId(), userA.getUserId()).then().statusCode(200);
+
+        given()
+                .when()
+                .get("/{userId}/followers/list?page=0&size=1", userA.getUserId())
+                .then()
+                .statusCode(200)
+                .contentType(ContentType.JSON)
+                .body("userId", is(userA.getUserId()))
+                .body("userName", is(userA.getUserName()))
+                .body("followers", hasSize(1));
+
+        given()
+                .when()
+                .get("/{userId}/followers/list?page=1&size=1", userA.getUserId())
+                .then()
+                .statusCode(200)
+                .contentType(ContentType.JSON)
+                .body("userId", is(userA.getUserId()))
+                .body("userName", is(userA.getUserName()))
+                .body("followers", hasSize(1));
     }
 
     @Test

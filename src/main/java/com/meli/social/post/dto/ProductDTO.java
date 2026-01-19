@@ -16,10 +16,10 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class ProductDTO {
 
-    @JsonAlias("productId")
+    @JsonAlias({"productId", "product_id"})
     private Integer productId;
 
-    @JsonAlias("productName")
+    @JsonAlias({"productName", "product_name"})
     @NotBlank
     @Size(max = 40, message = "Nome do produto deve conter no máximo 40 caracteres")
     @Pattern(regexp = "^[\\p{L}\\p{N} ]+$", message = "Nome do produto deve conter apenas letras e números")
